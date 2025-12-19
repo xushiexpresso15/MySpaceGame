@@ -592,6 +592,16 @@ function loop(t) {
                 // Broadcast explosion effect to all players (also creates locally)
                 Network.broadcastExplosion(player.x, player.y, 'LARGE');
 
+                // Check for PVP victory (host only)
+                if (Network.isHost) {
+                    const winner = Network.checkPVPVictory();
+                    if (winner) {
+                        console.log('[Game] PVP Victory! Winner:', winner.name);
+                        Network.broadcastPVPVictory(winner.name, winner.id);
+                        return; // Skip spectator mode, game is over
+                    }
+                }
+
                 showSpectatorMode();
             }
         }

@@ -2040,31 +2040,79 @@ const Network = {
     // =========================================================================
 
     /**
-     * Handle PVP damage event (when another player hits you)
-     */
+ * Handle PVP damage event (when another player hits you)
+ */
     handlePvpDamage(data) {
         // Only apply damage if we are the target
         if (data.targetId === this.myId && player && !player.dead) {
             const damage = data.damage || 20;
+            const hitAngle = data.hitAngle !== undefined ? data.hitAngle : 0;
 
-            // Apply shield damage first
-            if (player.shield > 0) {
-                player.shield -= damage;
-                if (player.shield < 0) {
-                    player.hull += player.shield; // Overflow to hull
-                    player.shield = 0;
+            // Calculate sector from hit angle (same as enemy bullet logic)
+            const sector = getSector(player.angle, hitAngle);
+
+            // Apply shield damage first (shields are stored as array)
+            if (player.shield && player.shield[sector] > 0) {
+                let overflow = Math.max(0, damage - player.shield[sector]);
+                player.shield[sector] = Math.max(0, player.shield[sector] - damage);
+
+                // Add hit effect (shield glow)
+                if (player.hits) {
+                    player.hits.push(new ShieldHit(hitAngle, sector));
                 }
-                // Add hit effect
-                if (player.hits && data.hitAngle !== undefined) {
-                    player.hits.push({ angle: data.hitAngle, sector: 0, life: 0.5 });
+
+                // Add shield impact glow at hit point
+                if (typeof shieldImpactGlows !== 'undefined' && typeof ShieldImpactGlow !== 'undefined') {
+                    let hitX = player.x + Math.cos(hitAngle) * (player.shR || 50);
+                    let hitY = player.y + Math.sin(hitAngle) * (player.shR || 50);
+                    shieldImpactGlows.push(new ShieldImpactGlow(hitX, hitY));
+                }
+
+                // Overflow damage goes to hull
+                if (overflow > 0) {
+                    player.hull = Math.max(0, player.hull - overflow);
                 }
             } else {
-                player.hull -= damage;
+                // Direct hull damage
+                player.hull = Math.max(0, player.hull - damage);
+
+                // Add sparkler effect for hull hit
+                if (typeof sparklerEffects !== 'undefined' && typeof SparklerEffect !== 'undefined' &&
+                    data.x !== undefined && data.y !== undefined) {
+                    sparklerEffects.push(new SparklerEffect(data.x, data.y, hitAngle));
+                }
+            }
+
+            // Update HUD
+            if (typeof hullDisplay !== 'undefined') {
+                hullDisplay.innerText = Math.round(player.hull / player.maxHull * 100) + '%';
             }
 
             // Add explosion at hit location
             if (data.x !== undefined && data.y !== undefined) {
                 explosions.push(new Explosion(data.x, data.y));
+            }
+
+            // Check for player death
+            if (player.hull <= 0 && !player.dead) {
+                player.dead = true;
+
+                // Broadcast death
+                const playerId = this.isHost ? 'host' : this.myId;
+                this.broadcastPlayerDeath(playerId, player.x, player.y);
+                this.broadcastExplosion(player.x, player.y, 'LARGE');
+
+                // Show spectator mode
+                if (typeof showSpectatorMode === 'function') showSpectatorMode();
+
+                // Check for PVP victory (host only)
+                if (this.isHost) {
+                    const winner = this.checkPVPVictory();
+                    if (winner) {
+                        console.log('[Network] PVP Victory after local death! Winner:', winner.name);
+                        this.broadcastPVPVictory(winner.name, winner.id);
+                    }
+                }
             }
         }
     },
