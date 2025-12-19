@@ -592,6 +592,9 @@ function loop(t) {
                 // Create large explosion for player death
                 explosions.push(new LargeExplosion(player.x, player.y));
 
+                // Broadcast explosion effect to all other players
+                Network.broadcastExplosion(player.x, player.y, 'LARGE');
+
                 showSpectatorMode();
             }
         }
@@ -1183,8 +1186,16 @@ function loop(t) {
                 t.dead = true;
                 explosions.push(new LargeExplosion(t.x, t.y)); // Large explosion for torpedo-boss hull hit
                 if (boss.hp <= 0) {
+                    const bossX = boss.x;
+                    const bossY = boss.y;
                     boss.dead = true;
-                    explosions.push(new Explosion(boss.x, boss.y));
+                    explosions.push(new Explosion(bossX, bossY));
+
+                    // Broadcast boss death explosion
+                    if (Network.isMultiplayer && Network.connected) {
+                        Network.broadcastExplosion(bossX, bossY, 'LARGE');
+                    }
+
                     bossActive = false;
                     boss = null;
                     bossTimer = 60;
@@ -1237,9 +1248,10 @@ function loop(t) {
                         // Increment kill counter
                         if (typeof MD3 !== 'undefined') MD3.incrementScore();
 
-                        // Broadcast destruction event
+                        // Broadcast explosion and destruction event
                         if (Network.isMultiplayer && Network.connected) {
-                            Network.deleteEntity('enemy_' + e.netId, e.x, e.y);
+                            Network.broadcastExplosion(e.x, e.y, 'LARGE');
+                            Network.deleteEntity('enemy_' + e.netId);
                         }
                     }
                 }
@@ -1390,7 +1402,10 @@ function loop(t) {
                         if (e.hp <= 0 && !e.dead) {
                             e.dead = true;
                             explosions.push(new Explosion(e.x, e.y));
-                            if (Network.isHost) Network.deleteEntity(e.entityId);
+                            if (Network.isHost) {
+                                Network.broadcastExplosion(e.x, e.y, 'NORMAL');
+                                Network.deleteEntity(e.entityId);
+                            }
                         }
 
                         // Enemy Bounce - only host/single-player calculates
@@ -1429,6 +1444,7 @@ function loop(t) {
                         if (e.hp <= 0 && !e.dead) {
                             e.dead = true;
                             explosions.push(new Explosion(e.x, e.y));
+                            Network.broadcastExplosion(e.x, e.y, 'NORMAL');
                             Network.deleteEntity(e.entityId);
                         }
 

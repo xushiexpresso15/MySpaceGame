@@ -80,6 +80,9 @@ const Network = {
         // Connection
         PLAYER_JOINED: 'PJ',     // Notify clients of new player
         PLAYER_LEFT: 'PL',       // Notify clients of player disconnect
+
+        // Visual Effects
+        EXPLOSION: 'EX',         // Explosion effect sync
     },
 
     // === URL UTILITIES ===
@@ -581,6 +584,10 @@ const Network = {
                 this.handlePlayerState(data);
                 break;
             case this.MSG.PLAYER_DEATH:
+                // If Host received from client, relay to all other clients
+                if (this.isHost) {
+                    this.broadcast(this.MSG.PLAYER_DEATH, data, senderId);
+                }
                 this.handlePlayerDeath(data);
                 break;
             case this.MSG.KILL_SYNC:
@@ -698,6 +705,25 @@ const Network = {
                 break;
             case this.MSG.COLLISION_EVENT:
                 if (this.isHost) this.handleCollisionEvent(senderId, data);
+                break;
+            case this.MSG.EXPLOSION:
+                // If Host received from client, relay to all other clients and show locally
+                if (this.isHost) {
+                    this.broadcast(this.MSG.EXPLOSION, data, senderId);
+                    // Also create explosion on host
+                    if (data.type === 'LARGE') {
+                        explosions.push(new LargeExplosion(data.x, data.y));
+                    } else {
+                        explosions.push(new Explosion(data.x, data.y));
+                    }
+                } else {
+                    // Client receives explosion effect from host
+                    if (data.type === 'LARGE') {
+                        explosions.push(new LargeExplosion(data.x, data.y));
+                    } else {
+                        explosions.push(new Explosion(data.x, data.y));
+                    }
+                }
                 break;
         }
     },
@@ -1083,6 +1109,20 @@ const Network = {
         if (!this.isHost) return;
         this.broadcast(this.MSG.ENTITY_DELETE, { entityId: entityId });
         this.entities.delete(entityId);
+    },
+
+    /**
+     * Broadcast explosion effect to all clients
+     * Works for both Host and Client:
+     * - Host broadcasts to all clients
+     * - Client sends to host who relays to other clients
+     * @param {number} x - X position
+     * @param {number} y - Y position
+     * @param {string} type - 'NORMAL' or 'LARGE'
+     */
+    broadcastExplosion(x, y, type = 'NORMAL') {
+        if (!this.connected) return;
+        this.send(this.MSG.EXPLOSION, { x: x, y: y, type: type });
     },
 
     /**
@@ -1602,9 +1642,12 @@ const Network = {
 
     /**
      * Broadcast player death event
+     * Works for both Host and Client:
+     * - Host broadcasts to all clients
+     * - Client sends to host who relays to other clients
      */
     broadcastPlayerDeath(playerId, x, y) {
-        this.broadcast(this.MSG.PLAYER_DEATH, {
+        this.send(this.MSG.PLAYER_DEATH, {
             playerId: playerId,
             x: x,
             y: y
@@ -1989,7 +2032,8 @@ const Network = {
             if (enemy.hp <= 0) {
                 enemy.dead = true;
                 explosions.push(new Explosion(enemy.x, enemy.y));
-                // Use the enemy's actual entityId for deletion
+                // Broadcast explosion and delete entity
+                this.broadcastExplosion(enemy.x, enemy.y, 'NORMAL');
                 this.deleteEntity(enemy.entityId || entityId);
             }
         }
