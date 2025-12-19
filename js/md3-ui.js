@@ -191,11 +191,19 @@ const MD3 = {
      * Called when one player wins in PVP + No Enemy Spawn mode
      */
     showPVPVictory(winnerName, isHost) {
+        console.log('[MD3] showPVPVictory called:', winnerName, 'isHost:', isHost);
+
         // Hide HUD
         if (this.hud) this.hud.classList.add('md3-hidden');
 
         // Hide death banner
         if (this.deathBanner) this.deathBanner.classList.add('md3-hidden');
+
+        // Hide spectator overlay (important for losers who are spectating)
+        if (this.spectatorOverlay) this.spectatorOverlay.classList.add('md3-hidden');
+
+        // Hide timer
+        if (this.timer) this.timer.classList.add('md3-hidden');
 
         // Hide controls
         const controls = document.getElementById('md3-controls');

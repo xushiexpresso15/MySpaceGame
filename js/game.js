@@ -1327,7 +1327,7 @@ function loop(t) {
             // PvP: Check if torpedo hits other players (only if PVP enabled)
             if (Network.isMultiplayer && pvpEnabled && !t.isRemote) {
                 for (const [id, rp] of remotePlayers) {
-                    if (rp && !rp.dead && Math.hypot(t.x - rp.x, t.y - rp.y) < (rp.r || 30)) {
+                    if (rp && !rp.dead && Math.hypot(t.x - rp.x, t.y - rp.y) < (rp.shR || 46)) {
                         // Send PVP damage to target
                         const hitAngle = Math.atan2(t.y - rp.y, t.x - rp.x);
                         Network.sendPvpDamage(id, 60, t.x, t.y, hitAngle);
