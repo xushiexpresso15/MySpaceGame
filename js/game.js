@@ -589,10 +589,7 @@ function loop(t) {
                 const playerId = Network.isHost ? 'host' : Network.myId;
                 Network.broadcastPlayerDeath(playerId, player.x, player.y);
 
-                // Create large explosion for player death
-                explosions.push(new LargeExplosion(player.x, player.y));
-
-                // Broadcast explosion effect to all other players
+                // Broadcast explosion effect to all players (also creates locally)
                 Network.broadcastExplosion(player.x, player.y, 'LARGE');
 
                 showSpectatorMode();
@@ -1189,11 +1186,12 @@ function loop(t) {
                     const bossX = boss.x;
                     const bossY = boss.y;
                     boss.dead = true;
-                    explosions.push(new Explosion(bossX, bossY));
 
-                    // Broadcast boss death explosion
+                    // Create boss death explosion (locally in SP, via broadcast in MP)
                     if (Network.isMultiplayer && Network.connected) {
                         Network.broadcastExplosion(bossX, bossY, 'LARGE');
+                    } else {
+                        explosions.push(new Explosion(bossX, bossY));
                     }
 
                     bossActive = false;
@@ -1243,15 +1241,16 @@ function loop(t) {
                     t.dead = true;
                     if (e.hp <= 0) {
                         e.dead = true;
-                        explosions.push(new LargeExplosion(e.x, e.y)); // Large explosion for torpedo-hull hit
 
                         // Increment kill counter
                         if (typeof MD3 !== 'undefined') MD3.incrementScore();
 
-                        // Broadcast explosion and destruction event
+                        // Create explosion (locally in SP, via broadcast in MP)
                         if (Network.isMultiplayer && Network.connected) {
                             Network.broadcastExplosion(e.x, e.y, 'LARGE');
                             Network.deleteEntity('enemy_' + e.netId);
+                        } else {
+                            explosions.push(new LargeExplosion(e.x, e.y));
                         }
                     }
                 }
@@ -1401,10 +1400,12 @@ function loop(t) {
                         e.hp -= 60;
                         if (e.hp <= 0 && !e.dead) {
                             e.dead = true;
-                            explosions.push(new Explosion(e.x, e.y));
                             if (Network.isHost) {
                                 Network.broadcastExplosion(e.x, e.y, 'NORMAL');
                                 Network.deleteEntity(e.entityId);
+                            } else {
+                                // Single player
+                                explosions.push(new Explosion(e.x, e.y));
                             }
                         }
 
@@ -1443,7 +1444,6 @@ function loop(t) {
                         e.hp -= 60;
                         if (e.hp <= 0 && !e.dead) {
                             e.dead = true;
-                            explosions.push(new Explosion(e.x, e.y));
                             Network.broadcastExplosion(e.x, e.y, 'NORMAL');
                             Network.deleteEntity(e.entityId);
                         }

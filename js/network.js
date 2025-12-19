@@ -1039,9 +1039,7 @@ const Network = {
 
         if (enemyIdx !== -1) {
             const enemy = enemies[enemyIdx];
-            if (!enemy.dead) {
-                explosions.push(new Explosion(enemy.x, enemy.y));
-            }
+            // Note: Explosion is now sent via separate EXPLOSION message, not created here
             enemies.splice(enemyIdx, 1);
         }
 
@@ -1112,7 +1110,7 @@ const Network = {
     },
 
     /**
-     * Broadcast explosion effect to all clients
+     * Broadcast explosion effect to all clients AND create locally
      * Works for both Host and Client:
      * - Host broadcasts to all clients
      * - Client sends to host who relays to other clients
@@ -1123,6 +1121,13 @@ const Network = {
     broadcastExplosion(x, y, type = 'NORMAL') {
         if (!this.connected) return;
         this.send(this.MSG.EXPLOSION, { x: x, y: y, type: type });
+
+        // IMPORTANT: Also create explosion locally so broadcaster sees it
+        if (type === 'LARGE') {
+            if (typeof LargeExplosion !== 'undefined') explosions.push(new LargeExplosion(x, y));
+        } else {
+            if (typeof Explosion !== 'undefined') explosions.push(new Explosion(x, y));
+        }
     },
 
     /**
@@ -2031,8 +2036,7 @@ const Network = {
             // Check if dead
             if (enemy.hp <= 0) {
                 enemy.dead = true;
-                explosions.push(new Explosion(enemy.x, enemy.y));
-                // Broadcast explosion and delete entity
+                // Broadcast explosion (also creates locally) and delete entity
                 this.broadcastExplosion(enemy.x, enemy.y, 'NORMAL');
                 this.deleteEntity(enemy.entityId || entityId);
             }
