@@ -1,10 +1,8 @@
-# 🚀 Space Shooter
-
-A browser-based multiplayer space combat game with stunning visuals and WebRTC-powered multiplayer support.
+## AI class project
 
 ## 🎮 Play Now
 
-Visit the game at: `https://YOUR_USERNAME.github.io/YOUR_REPO_NAME/`
+https://xushiexpresso15.github.io/MySpaceGame/
 
 ## 🕹️ Controls
 
@@ -49,3 +47,4 @@ Visit the game at: `https://YOUR_USERNAME.github.io/YOUR_REPO_NAME/`
 ## 📄 License
 
 MIT License
+
