@@ -628,6 +628,11 @@ const Network = {
                         rp.hull = rp.maxHull || 100;
                     }
                 }
+                // Hide death banner and reset UI if shown
+                if (typeof MD3 !== 'undefined') {
+                    MD3.hideDeathBanner();
+                    MD3.resetUI();
+                }
                 // Reset game UI and state
                 if (typeof resetGameUI === 'function') resetGameUI();
                 restartGame();
@@ -642,6 +647,10 @@ const Network = {
                 if (partyHud) partyHud.classList.remove('md3-hidden');
                 // Update party HUD
                 if (typeof updatePartyHUD === 'function') updatePartyHUD();
+                // Show connection status toast
+                if (typeof MenuManager !== 'undefined' && MenuManager.showToast) {
+                    MenuManager.showToast('🔄 Game Restarted - Connected');
+                }
                 break;
             case this.MSG.GAME_OVER:
                 this.handleGameOver(data);
@@ -1473,7 +1482,8 @@ const Network = {
         const rp = remotePlayers.get(data.playerId);
         if (rp && !rp.dead) {
             rp.dead = true;
-            explosions.push(new Explosion(data.x, data.y));
+            // Create large explosion for player death
+            explosions.push(new LargeExplosion(data.x, data.y));
 
             // Show toast notification
             if (typeof MenuManager !== 'undefined' && MenuManager.showToast) {

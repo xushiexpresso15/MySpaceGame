@@ -355,7 +355,26 @@ function startMultiplayerGame() {
 
 function restartGame() {
     resizeGame();
-    player = new Ship(gameWidth / 2, gameHeight / 2, true);
+
+    // Spawn at different positions to prevent PVP overlap
+    let spawnX, spawnY;
+    if (Network.isMultiplayer) {
+        if (Network.isHost) {
+            // Host spawns at left side
+            spawnX = gameWidth * 0.25;
+            spawnY = gameHeight / 2;
+        } else {
+            // Join player spawns at right side
+            spawnX = gameWidth * 0.75;
+            spawnY = gameHeight / 2;
+        }
+    } else {
+        // Single player spawns at center
+        spawnX = gameWidth / 2;
+        spawnY = gameHeight / 2;
+    }
+
+    player = new Ship(spawnX, spawnY, true);
     enemies = [];
 
     // Only host spawns the initial enemy
@@ -570,8 +589,8 @@ function loop(t) {
                 const playerId = Network.isHost ? 'host' : Network.myId;
                 Network.broadcastPlayerDeath(playerId, player.x, player.y);
 
-                // Create local explosion
-                explosions.push(new Explosion(player.x, player.y));
+                // Create large explosion for player death
+                explosions.push(new LargeExplosion(player.x, player.y));
 
                 showSpectatorMode();
             }
