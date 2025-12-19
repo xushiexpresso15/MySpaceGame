@@ -935,6 +935,8 @@ const Network = {
                 if (data.ca !== undefined) e.chargeAngle = data.ca * Math.PI / 180;
                 if (data.ct !== undefined) e.chargeTime = data.ct;
             }
+            // Sync HP so clients can see damage from collisions
+            if (data.hp !== undefined) e.hp = data.hp;
             if (data.dead && !e.dead) {
                 e.dead = true;
                 explosions.push(new Explosion(e.x, e.y));
@@ -1096,6 +1098,7 @@ const Network = {
                 c: e.laserCharging ? 1 : 0,
                 ca: e.chargeAngle ? e.chargeAngle * 180 / Math.PI : 0, // charge angle for aiming animation
                 ct: e.chargeTime || 0, // charge time remaining
+                hp: e.hp, // Sync HP so clients can see damage
                 dead: e.dead
             });
         }
@@ -1368,6 +1371,17 @@ const Network = {
 
         // Handle REVIVE_ALL special message (boss killed = revive all dead players)
         if (data.playerId === 'REVIVE_ALL' && data.revive) {
+            // CRITICAL: Revive ALL remote players so they become visible again
+            for (let [id, rp] of remotePlayers) {
+                if (rp.dead) {
+                    rp.dead = false;
+                    rp.hull = rp.maxHull || 100;
+                    // Reset shields
+                    rp.shield = [rp.maxShield || 150, rp.maxShield || 150, rp.maxShield || 150, rp.maxShield || 150];
+                }
+            }
+
+            // Revive local player if dead
             if (typeof player !== 'undefined' && player && player.dead) {
                 player.dead = false;
                 player.hull = player.maxHull;
@@ -1380,19 +1394,28 @@ const Network = {
                 if (typeof MenuManager !== 'undefined' && MenuManager.showToast) {
                     MenuManager.showToast('🎉 You have been revived! (Boss Defeated)');
                 }
-
-                // Update party HUD
-                if (typeof updatePartyHUD === 'function') updatePartyHUD();
             } else {
                 // Show boss defeated toast even if not dead
                 if (typeof MenuManager !== 'undefined' && MenuManager.showToast) {
                     MenuManager.showToast('🎉 Boss Defeated!');
                 }
             }
+
+            // Update party HUD to show all revived players
+            if (typeof updatePartyHUD === 'function') updatePartyHUD();
         }
 
         // Handle BOSS_KILLED from client (host should broadcast REVIVE_ALL to everyone)
         if (data.playerId === 'BOSS_KILLED' && this.isHost) {
+            // Revive ALL remote players on host side
+            for (let [id, rp] of remotePlayers) {
+                if (rp.dead) {
+                    rp.dead = false;
+                    rp.hull = rp.maxHull || 100;
+                    rp.shield = [rp.maxShield || 150, rp.maxShield || 150, rp.maxShield || 150, rp.maxShield || 150];
+                }
+            }
+
             // Revive host if dead
             if (typeof player !== 'undefined' && player && player.dead) {
                 player.dead = false;
@@ -1402,7 +1425,14 @@ const Network = {
                 if (typeof MenuManager !== 'undefined' && MenuManager.showToast) {
                     MenuManager.showToast('🎉 Boss Defeated! You have been revived!');
                 }
+            } else {
+                if (typeof MenuManager !== 'undefined' && MenuManager.showToast) {
+                    MenuManager.showToast('🎉 Boss Defeated!');
+                }
             }
+
+            // Update party HUD
+            if (typeof updatePartyHUD === 'function') updatePartyHUD();
 
             // Broadcast revival to all clients
             this.broadcast(this.MSG.PLAYER_STATE, {
@@ -1712,6 +1742,11 @@ const Network = {
         boss.invulnerable = data.invulnerable || false;
         boss.attackSubTimer = data.attackSubTimer || 0;
 
+        // Common fields for all bosses
+        if (data.phase !== undefined) boss.phase = data.phase;
+        if (data.shakeTimer !== undefined) boss.shakeTimer = data.shakeTimer;
+        if (data.attackWarningTimer !== undefined) boss.attackWarningTimer = data.attackWarningTimer;
+
         // Attack-specific fields
         if (data.dashTarget) boss.dashTarget = data.dashTarget;
         if (data.dashChargeTime !== undefined) boss.dashChargeTime = data.dashChargeTime;
@@ -1724,7 +1759,31 @@ const Network = {
             boss.showAttackWarning = data.showAttackWarning;
             boss.currentAttackInfo = data.currentAttackInfo;
         }
+
+        // LiquidCrystal specific fields
+        if (data.dashPhase !== undefined) boss.dashPhase = data.dashPhase;
+        if (data.spinPhase !== undefined) boss.spinPhase = data.spinPhase;
+        if (data.bombRamPhase !== undefined) boss.bombRamPhase = data.bombRamPhase;
+        if (data.dashProgress !== undefined) boss.dashProgress = data.dashProgress;
+        if (data.teleportProgress !== undefined) boss.teleportProgress = data.teleportProgress;
+        if (data.dashStartX !== undefined) {
+            boss.dashStartX = data.dashStartX;
+            boss.dashStartY = data.dashStartY;
+        }
+        if (data.teleportTargetX !== undefined) {
+            boss.teleportTargetX = data.teleportTargetX;
+            boss.teleportTargetY = data.teleportTargetY;
+            boss.teleportStartX = data.teleportStartX;
+            boss.teleportStartY = data.teleportStartY;
+        }
+
+        // VoidReaper specific fields
+        if (data.voidPullActive !== undefined) boss.voidPullActive = data.voidPullActive;
+        if (data.voidPullTimer !== undefined) boss.voidPullTimer = data.voidPullTimer;
+        if (data.harvestTimer !== undefined) boss.harvestTimer = data.harvestTimer;
+        if (data.enrageGlow !== undefined) boss.enrageGlow = data.enrageGlow;
     },
+
 
     /**
      * Host broadcasts boss attack state (call when attack starts/changes)
@@ -1738,7 +1797,11 @@ const Network = {
             invulnerable: boss.invulnerable,
             attackSubTimer: boss.attackSubTimer,
             showAttackWarning: boss.showAttackWarning,
-            currentAttackInfo: boss.currentAttackInfo
+            currentAttackInfo: boss.currentAttackInfo,
+            // Common fields for all bosses
+            phase: boss.phase,
+            shakeTimer: boss.shakeTimer,
+            attackWarningTimer: boss.attackWarningTimer
         };
 
         // Add attack-specific fields
@@ -1748,8 +1811,32 @@ const Network = {
         if (boss.laserSubState) data.laserSubState = boss.laserSubState;
         if (boss.spiralAngle !== undefined) data.spiralAngle = boss.spiralAngle;
 
+        // LiquidCrystal specific fields
+        if (boss.dashPhase !== undefined) data.dashPhase = boss.dashPhase;
+        if (boss.spinPhase !== undefined) data.spinPhase = boss.spinPhase;
+        if (boss.bombRamPhase !== undefined) data.bombRamPhase = boss.bombRamPhase;
+        if (boss.dashProgress !== undefined) data.dashProgress = boss.dashProgress;
+        if (boss.teleportProgress !== undefined) data.teleportProgress = boss.teleportProgress;
+        if (boss.dashStartX !== undefined) {
+            data.dashStartX = boss.dashStartX;
+            data.dashStartY = boss.dashStartY;
+        }
+        if (boss.teleportTargetX !== undefined) {
+            data.teleportTargetX = boss.teleportTargetX;
+            data.teleportTargetY = boss.teleportTargetY;
+            data.teleportStartX = boss.teleportStartX;
+            data.teleportStartY = boss.teleportStartY;
+        }
+
+        // VoidReaper specific fields
+        if (boss.voidPullActive !== undefined) data.voidPullActive = boss.voidPullActive;
+        if (boss.voidPullTimer !== undefined) data.voidPullTimer = boss.voidPullTimer;
+        if (boss.harvestTimer !== undefined) data.harvestTimer = boss.harvestTimer;
+        if (boss.enrageGlow !== undefined) data.enrageGlow = boss.enrageGlow;
+
         this.broadcast(this.MSG.BOSS_ATTACK_STATE, data);
     },
+
 
     /**
      * Broadcast game over to all clients

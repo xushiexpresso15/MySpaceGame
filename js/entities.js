@@ -2349,7 +2349,7 @@ class Ship {
     constructor(x, y, isPlayer, enemyType) {
         this.x = x; this.y = y; this.isPlayer = isPlayer;
         this.angle = -Math.PI / 2; this.target = -Math.PI / 2; this.dead = false;
-        this.r = 23; this.shR = SHIP_SIZE / 2 + 20;
+        this.r = 23; this.shR = 46; // Match remote player shield radius for visual consistency
         this.shield = [150, 150, 150, 150]; this.maxShield = 150;
         this.hull = 100; this.maxHull = 100;
         this.hp = 100; this.maxhp = 100;

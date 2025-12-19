@@ -1490,8 +1490,9 @@ function loop(t) {
                 if (Network.isHost) {
                     Network.broadcastEntityMoves();
 
-                    // Sync boss attack state every 100ms during boss fight
-                    if (boss && !boss.dead && boss.isAttacking) {
+                    // Sync boss attack state every 30Hz during boss fight
+                    // Sync even when not attacking to catch pre-attack animations and warnings
+                    if (boss && !boss.dead) {
                         Network.syncBossAttackState();
                     }
                 } else {
