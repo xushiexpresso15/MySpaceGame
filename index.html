@@ -90,10 +90,15 @@
         <!-- GAME OVER OVERLAY: When all players are dead -->
         <div id="md3-gameover" class="md3-game-over-overlay md3-hidden">
             <div class="md3-card">
+                <!-- PVP Winner Announcement (hidden by default) -->
+                <div id="md3-pvp-winner" class="md3-pvp-winner md3-hidden">
+                    🏆 <span id="md3-winner-name"></span> Wins!
+                </div>
+
                 <h1 class="md3-card-title">MISSION FAILED</h1>
 
                 <div class="md3-stats-container">
-                    <div class="md3-stat-row">
+                    <div class="md3-stat-row" id="md3-enemies-row">
                         <span class="md3-stat-label">Enemies Destroyed</span>
                         <span class="md3-stat-value" id="md3-score-enemies">0</span>
                     </div>

@@ -158,6 +158,10 @@ const MD3 = {
         const controls = document.getElementById('md3-controls');
         if (controls) controls.classList.add('md3-hidden');
 
+        // Hide PVP winner (in case it was shown)
+        const pvpWinner = document.getElementById('md3-pvp-winner');
+        if (pvpWinner) pvpWinner.classList.add('md3-hidden');
+
         // Update stats
         if (this.scoreEnemies) {
             this.scoreEnemies.textContent = score || this.enemiesDestroyed;
@@ -170,6 +174,54 @@ const MD3 = {
         }
 
         // Show/hide restart button based on host status
+        if (isHost) {
+            if (this.btnRestart) this.btnRestart.classList.remove('md3-hidden');
+            if (this.waitMsg) this.waitMsg.classList.add('md3-hidden');
+        } else {
+            if (this.btnRestart) this.btnRestart.classList.add('md3-hidden');
+            if (this.waitMsg) this.waitMsg.classList.remove('md3-hidden');
+        }
+
+        // Show game over overlay
+        if (this.gameOverOverlay) this.gameOverOverlay.classList.remove('md3-hidden');
+    },
+
+    /**
+     * Show PVP Victory Screen
+     * Called when one player wins in PVP + No Enemy Spawn mode
+     */
+    showPVPVictory(winnerName, isHost) {
+        // Hide HUD
+        if (this.hud) this.hud.classList.add('md3-hidden');
+
+        // Hide death banner
+        if (this.deathBanner) this.deathBanner.classList.add('md3-hidden');
+
+        // Hide controls
+        const controls = document.getElementById('md3-controls');
+        if (controls) controls.classList.add('md3-hidden');
+
+        // Show winner announcement
+        const pvpWinner = document.getElementById('md3-pvp-winner');
+        const winnerNameEl = document.getElementById('md3-winner-name');
+        if (pvpWinner && winnerNameEl) {
+            winnerNameEl.textContent = winnerName;
+            pvpWinner.classList.remove('md3-hidden');
+        }
+
+        // Update stats
+        if (this.scoreTime) {
+            const elapsed = Math.floor((Date.now() - this.gameStartTime) / 1000);
+            const mins = Math.floor(elapsed / 60);
+            const secs = elapsed % 60;
+            this.scoreTime.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Hide enemies counter in PVP (not relevant)
+        const enemiesRow = document.getElementById('md3-enemies-row');
+        if (enemiesRow) enemiesRow.classList.add('md3-hidden');
+
+        // Show/hide restart button
         if (isHost) {
             if (this.btnRestart) this.btnRestart.classList.remove('md3-hidden');
             if (this.waitMsg) this.waitMsg.classList.add('md3-hidden');
@@ -200,6 +252,12 @@ const MD3 = {
         // Hide overlays
         if (this.deathBanner) this.deathBanner.classList.add('md3-hidden');
         if (this.gameOverOverlay) this.gameOverOverlay.classList.add('md3-hidden');
+
+        // Hide PVP winner and show enemies row (reset from PVP mode)
+        const pvpWinner = document.getElementById('md3-pvp-winner');
+        if (pvpWinner) pvpWinner.classList.add('md3-hidden');
+        const enemiesRow = document.getElementById('md3-enemies-row');
+        if (enemiesRow) enemiesRow.classList.remove('md3-hidden');
 
         // Show HUD and reset opacity
         if (this.hud) {

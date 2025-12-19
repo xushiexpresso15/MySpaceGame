@@ -287,6 +287,46 @@
 }
 
 /* =====================================================================
+   PVP VICTORY WINNER DISPLAY
+   ===================================================================== */
+
+.md3-pvp-winner {
+    font-size: clamp(24px, 4vw, 36px);
+    font-weight: 700;
+    color: #FFD700;
+    margin-bottom: 20px;
+    text-shadow:
+        0 0 20px rgba(255, 215, 0, 0.8),
+        0 0 40px rgba(255, 215, 0, 0.5),
+        0 0 60px rgba(255, 215, 0, 0.3);
+    letter-spacing: 2px;
+    animation: md3-winner-glow 1.5s ease-in-out infinite alternate;
+}
+
+.md3-pvp-winner #md3-winner-name {
+    color: #FFFFFF;
+    text-shadow:
+        0 0 15px rgba(255, 255, 255, 0.8),
+        0 0 30px rgba(255, 215, 0, 0.5);
+}
+
+@keyframes md3-winner-glow {
+    from {
+        text-shadow:
+            0 0 20px rgba(255, 215, 0, 0.8),
+            0 0 40px rgba(255, 215, 0, 0.5),
+            0 0 60px rgba(255, 215, 0, 0.3);
+    }
+
+    to {
+        text-shadow:
+            0 0 30px rgba(255, 215, 0, 1),
+            0 0 60px rgba(255, 215, 0, 0.7),
+            0 0 90px rgba(255, 215, 0, 0.5);
+    }
+}
+
+/* =====================================================================
    MD3 FILLED BUTTON (Frosted Glass Style)
    ===================================================================== */
 

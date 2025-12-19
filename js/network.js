@@ -83,6 +83,7 @@ const Network = {
 
         // Visual Effects
         EXPLOSION: 'EX',         // Explosion effect sync
+        PVP_VICTORY: 'PV',       // PVP victory - one player wins
     },
 
     // === URL UTILITIES ===
@@ -742,6 +743,9 @@ const Network = {
                         explosions.push(new Explosion(data.x, data.y));
                     }
                 }
+                break;
+            case this.MSG.PVP_VICTORY:
+                this.handlePVPVictory(data);
                 break;
         }
     },
@@ -1560,6 +1564,16 @@ const Network = {
         // Update party HUD
         if (typeof updatePartyHUD === 'function') updatePartyHUD();
 
+        // Check for PVP victory first (PVP + No Enemy Spawn mode)
+        if (this.isHost && typeof gameOver !== 'undefined' && !gameOver) {
+            const winner = this.checkPVPVictory();
+            if (winner) {
+                console.log('[Network] PVP Victory! Winner:', winner.name);
+                this.broadcastPVPVictory(winner.name, winner.id);
+                return; // Don't check for all-dead game over
+            }
+        }
+
         // Immediately check if all players are now dead
         // This is critical when we (local player) are already dead
         if (typeof player !== 'undefined' && player.dead && typeof gameOver !== 'undefined' && !gameOver) {
@@ -1600,6 +1614,74 @@ const Network = {
 
         // Update party HUD
         if (typeof updatePartyHUD === 'function') updatePartyHUD();
+    },
+
+    /**
+     * Broadcast PVP victory to all clients
+     * Called when only one player remains alive in PVP + No Enemy Spawn mode
+     */
+    broadcastPVPVictory(winnerName, winnerId) {
+        if (!this.isHost) return;
+        this.broadcast(this.MSG.PVP_VICTORY, {
+            winnerName: winnerName,
+            winnerId: winnerId
+        });
+
+        // Also trigger locally on host
+        this.handlePVPVictory({ winnerName: winnerName, winnerId: winnerId });
+    },
+
+    /**
+     * Handle PVP victory notification
+     * Shows winner announcement and game over screen
+     */
+    handlePVPVictory(data) {
+        console.log('[Network] PVP Victory:', data.winnerName);
+
+        // Set game over state
+        if (typeof gameOver !== 'undefined') gameOver = true;
+
+        // Show PVP victory screen
+        if (typeof MD3 !== 'undefined') {
+            MD3.showPVPVictory(data.winnerName, this.isHost);
+        }
+    },
+
+    /**
+     * Check for PVP victory condition
+     * Returns winner info if only one player alive, null otherwise
+     */
+    checkPVPVictory() {
+        // Only check in PVP mode with enemy spawn disabled
+        if (!pvpEnabled || enemySpawnEnabled) return null;
+        if (!this.isMultiplayer || !this.connected) return null;
+
+        let alivePlayers = [];
+
+        // Check local player
+        if (typeof player !== 'undefined' && player && !player.dead) {
+            alivePlayers.push({
+                name: myPlayerName || 'Player',
+                id: this.isHost ? 'host' : this.myId
+            });
+        }
+
+        // Check remote players
+        for (let [id, rp] of remotePlayers) {
+            if (!rp.dead) {
+                alivePlayers.push({
+                    name: rp.name || 'Player',
+                    id: id
+                });
+            }
+        }
+
+        // If exactly one player alive, they win
+        if (alivePlayers.length === 1) {
+            return alivePlayers[0];
+        }
+
+        return null;
     },
 
     /**
