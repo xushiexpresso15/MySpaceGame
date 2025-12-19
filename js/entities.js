@@ -2376,6 +2376,17 @@ class Ship {
             this.bounceTimer = 0;
             this.bounceVelX = 0;
             this.bounceVelY = 0;
+
+            // Enemy shields - weaker than player
+            if (this.enemyType === 'blue') {
+                this.shield = [75, 75, 75, 75];
+                this.maxShield = 75;
+                this.shieldColor = { h: 200, s: 100, l: 50, name: 'blue' }; // Blue shields
+            } else {
+                this.shield = [50, 50, 50, 50];
+                this.maxShield = 50;
+                this.shieldColor = { h: 0, s: 100, l: 50, name: 'red' }; // Red shields
+            }
         }
     }
     takeDamage(amount) {
@@ -2470,7 +2481,7 @@ class Ship {
             ctx.restore();
         }
         this.drawHP();
-        if (this.isPlayer) this.drawShield();
+        this.drawShield();
     }
     drawHP() {
         ctx.fillStyle = "red";
@@ -2486,11 +2497,13 @@ class Ship {
         for (let i = 0; i < 4; i++) {
             let startAng = -Math.PI / 4 + i * Math.PI / 2 + this.angle;
             let endAng = startAng + Math.PI / 2;
+            // Use shieldColor for enemies, default blue for player
+            const sc = this.shieldColor || { h: 200, s: 100, l: 60 };
             if (this.shield[i] > 0) {
                 let b = ctx.createRadialGradient(this.x, this.y, this.shR * 0.7, this.x, this.y, this.shR);
-                b.addColorStop(0, 'rgba(0,140,255,0)');
-                b.addColorStop(.7, 'rgba(0,150,255,.05)');
-                b.addColorStop(1, 'rgba(100,220,255,.25)');
+                b.addColorStop(0, `hsla(${sc.h}, ${sc.s}%, ${sc.l}%, 0)`);
+                b.addColorStop(.7, `hsla(${sc.h}, ${sc.s}%, ${sc.l}%, 0.05)`);
+                b.addColorStop(1, `hsla(${sc.h}, ${sc.s}%, ${sc.l + 20}%, 0.25)`);
                 ctx.fillStyle = b;
             } else {
                 let b = ctx.createRadialGradient(this.x, this.y, this.shR * 0.7, this.x, this.y, this.shR);
@@ -2506,7 +2519,8 @@ class Ship {
             ctx.fill();
             // Only draw arc outline, not the lines to center
             if (this.shield[i] > 0) {
-                ctx.strokeStyle = 'rgba(120,200,255,.35)';
+                const sc = this.shieldColor || { h: 200, s: 100, l: 60 };
+                ctx.strokeStyle = `hsla(${sc.h}, ${sc.s}%, ${sc.l + 30}%, 0.35)`;
             } else {
                 ctx.strokeStyle = 'rgba(255,100,100,.5)';
             }
@@ -2527,9 +2541,10 @@ class Ship {
                 let iy = this.y + Math.sin(h.angle) * this.shR;
                 let gr = ctx.createRadialGradient(ix, iy, 0, ix, iy, 60);
                 let bright = this.shield[h.sector] / this.maxShield;
+                const sc = this.shieldColor || { h: 200, s: 100, l: 60 };
                 gr.addColorStop(0, `rgba(255,255,255,${h.life * bright})`);
-                gr.addColorStop(.3, `rgba(0,200,255,${h.life * .8 * bright})`);
-                gr.addColorStop(1, 'rgba(0,50,255,0)');
+                gr.addColorStop(.3, `hsla(${sc.h}, ${sc.s}%, ${sc.l}%, ${h.life * .8 * bright})`);
+                gr.addColorStop(1, `hsla(${sc.h}, ${sc.s}%, ${sc.l - 30}%, 0)`);
                 ctx.fillStyle = gr;
                 ctx.fillRect(ix - 60, iy - 60, 120, 120);
             }

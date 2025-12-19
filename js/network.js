@@ -2168,7 +2168,30 @@ const Network = {
         }
 
         if (enemy && !enemy.dead) {
-            enemy.hp -= damage;
+            const hitAngle = data.hitAngle || 0;
+            const sector = getSector(enemy.angle, hitAngle);
+
+            // Check shields first
+            if (enemy.shield && enemy.shield[sector] > 0) {
+                enemy.shield[sector] -= damage;
+
+                // Add shield hit visual effect
+                if (enemy.hits) {
+                    enemy.hits.push({ angle: hitAngle, sector: sector, life: 0.5 });
+                }
+
+                // Broadcast shield hit effect
+                this.broadcastExplosion(enemy.x + Math.cos(hitAngle) * 30, enemy.y + Math.sin(hitAngle) * 30, 'SMALL');
+
+                // Overflow damage to hull
+                if (enemy.shield[sector] < 0) {
+                    enemy.hp += enemy.shield[sector];
+                    enemy.shield[sector] = 0;
+                }
+            } else {
+                // Direct hull damage
+                enemy.hp -= damage;
+            }
 
             // Calculate bounce for the enemy
             const rp = remotePlayers.get(senderId);

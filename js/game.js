@@ -1247,8 +1247,43 @@ function loop(t) {
             }
             for (let e of enemies) {
                 if (!e.dead && Math.hypot(t.x - e.x, t.y - e.y) < e.r) {
-                    e.hp -= 60;
+                    const torpedoDamage = 60;
+                    const hitAngle = Math.atan2(t.y - e.y, t.x - e.x);
+                    const sector = getSector(e.angle, hitAngle);
+
+                    // Check shields first
+                    if (e.shield && e.shield[sector] > 0) {
+                        const shieldDamage = Math.min(e.shield[sector], torpedoDamage);
+                        e.shield[sector] -= torpedoDamage;
+
+                        // Add shield hit visual effect
+                        if (e.hits) {
+                            e.hits.push({ angle: hitAngle, sector: sector, life: 0.5 });
+                        }
+
+                        // Add shield impact glow
+                        if (typeof shieldImpactGlows !== 'undefined' && typeof ShieldImpactGlow !== 'undefined') {
+                            const hitX = e.x + Math.cos(hitAngle) * (e.shR || 46);
+                            const hitY = e.y + Math.sin(hitAngle) * (e.shR || 46);
+                            shieldImpactGlows.push(new ShieldImpactGlow(hitX, hitY));
+                        }
+
+                        // Small explosion for shield hit
+                        explosions.push(new SmallExplosion(t.x, t.y));
+
+                        // Overflow damage to hull
+                        if (e.shield[sector] < 0) {
+                            e.hp += e.shield[sector]; // Add negative value = subtract
+                            e.shield[sector] = 0;
+                        }
+                    } else {
+                        // Direct hull damage
+                        e.hp -= torpedoDamage;
+                        explosions.push(new Explosion(t.x, t.y));
+                    }
+
                     t.dead = true;
+
                     if (e.hp <= 0) {
                         e.dead = true;
 
