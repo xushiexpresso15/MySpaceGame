@@ -651,6 +651,9 @@ const Network = {
                 if (typeof MenuManager !== 'undefined' && MenuManager.showToast) {
                     MenuManager.showToast('🔄 Game Restarted - Connected');
                 }
+                // Immediately sync position with host so spawn positions are correct
+                // This ensures host sees client at right-side spawn position
+                this.sendClientShipMove();
                 break;
             case this.MSG.GAME_OVER:
                 this.handleGameOver(data);
@@ -1720,13 +1723,18 @@ const Network = {
                 MenuManager.transitionTo('JOIN_LOBBY');
                 if (typeof gameState !== 'undefined') gameState = 'JOIN_LOBBY';
 
-                // Show connected state (not waiting for invite)
-                const connectedDiv = document.getElementById('md3-join-connected');
-                const waitingDiv = document.getElementById('md3-join-waiting');
-                const answerDiv = document.getElementById('md3-join-answer');
-                if (connectedDiv) connectedDiv.classList.remove('md3-hidden');
-                if (waitingDiv) waitingDiv.classList.add('md3-hidden');
-                if (answerDiv) answerDiv.classList.add('md3-hidden');
+                // Wait for transition animation to complete before showing connected state
+                // transitionTo() resets the overlay, so we must delay showing connected
+                setTimeout(() => {
+                    const connectedDiv = document.getElementById('md3-join-connected');
+                    const waitingDiv = document.getElementById('md3-join-waiting');
+                    const answerDiv = document.getElementById('md3-join-answer');
+                    const connectingDiv = document.getElementById('md3-join-connecting');
+                    if (connectedDiv) connectedDiv.classList.remove('md3-hidden');
+                    if (waitingDiv) waitingDiv.classList.add('md3-hidden');
+                    if (answerDiv) answerDiv.classList.add('md3-hidden');
+                    if (connectingDiv) connectingDiv.classList.add('md3-hidden');
+                }, 400);
             }
         }
 
