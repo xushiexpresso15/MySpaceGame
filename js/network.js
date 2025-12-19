@@ -244,7 +244,16 @@ const Network = {
         return new Promise((resolve, reject) => {
             // PeerJS ID is the room ID for easy connection
             this.peer = new Peer('spacewings-' + this.roomId, {
-                debug: 1
+                debug: 1,
+                config: {
+                    iceServers: [
+                        { urls: 'stun:stun.l.google.com:19302' },
+                        { urls: 'stun:stun1.l.google.com:19302' },
+                        { urls: 'stun:stun2.l.google.com:19302' },
+                        { urls: 'stun:stun3.l.google.com:19302' },
+                        { urls: 'stun:stun4.l.google.com:19302' }
+                    ]
+                }
             });
 
             this.peer.on('open', (id) => {
@@ -316,7 +325,16 @@ const Network = {
 
         return new Promise((resolve, reject) => {
             this.peer = new Peer({
-                debug: 1
+                debug: 1,
+                config: {
+                    iceServers: [
+                        { urls: 'stun:stun.l.google.com:19302' },
+                        { urls: 'stun:stun1.l.google.com:19302' },
+                        { urls: 'stun:stun2.l.google.com:19302' },
+                        { urls: 'stun:stun3.l.google.com:19302' },
+                        { urls: 'stun:stun4.l.google.com:19302' }
+                    ]
+                }
             });
 
             this.peer.on('open', (id) => {
