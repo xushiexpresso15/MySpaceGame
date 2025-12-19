@@ -1297,6 +1297,19 @@ function loop(t) {
                         const hitAngle = Math.atan2(t.y - rp.y, t.x - rp.x);
                         Network.sendPvpDamage(id, 60, t.x, t.y, hitAngle);
                         t.dead = true;
+
+                        // Add local visual effect on remote player (so attacker sees shield glow)
+                        if (rp.hits) {
+                            rp.hits.push({ angle: hitAngle, sector: 0, life: 0.5 });
+                        }
+
+                        // Add shield impact glow at hit position
+                        if (typeof shieldImpactGlows !== 'undefined' && typeof ShieldImpactGlow !== 'undefined') {
+                            const hitX = rp.x + Math.cos(hitAngle) * (rp.shR || 46);
+                            const hitY = rp.y + Math.sin(hitAngle) * (rp.shR || 46);
+                            shieldImpactGlows.push(new ShieldImpactGlow(hitX, hitY));
+                        }
+
                         explosions.push(new Explosion(t.x, t.y));
                         break;
                     }

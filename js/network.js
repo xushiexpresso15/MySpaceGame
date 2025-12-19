@@ -83,7 +83,7 @@ const Network = {
 
         // Visual Effects
         EXPLOSION: 'EX',         // Explosion effect sync
-        PVP_VICTORY: 'PV',       // PVP victory - one player wins
+        PVP_VICTORY: 'PW',       // PVP victory - one player wins
     },
 
     // === URL UTILITIES ===
