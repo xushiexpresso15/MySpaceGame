@@ -1,0 +1,1506 @@
+/* =====================================================================
+   FROSTED MATERIAL DESIGN 3 - COMPLETE GAME UI STYLESHEET
+   "Glass Morphism" + Material You + Motion-First Architecture
+   ===================================================================== */
+
+/* =====================================================================
+   DESIGN TOKENS - FROSTED MATERIAL DESIGN
+   ===================================================================== */
+
+:root {
+    /* ===== PRIMARY COLOR PALETTE (Pastel Dynamic) ===== */
+    --md-primary: hsl(265, 89%, 78%);
+    --md-primary-dark: hsl(265, 70%, 55%);
+    --md-on-primary: #1a1625;
+    --md-primary-container: hsla(265, 89%, 85%, 0.25);
+    --md-on-primary-container: hsl(265, 40%, 20%);
+
+    /* Secondary */
+    --md-secondary: hsl(210, 100%, 80%);
+    --md-secondary-dark: hsl(210, 80%, 55%);
+    --md-on-secondary: #0a1929;
+
+    /* Tertiary / Accent */
+    --md-accent: hsl(340, 82%, 76%);
+    --md-accent-dark: hsl(340, 65%, 50%);
+    --md-on-accent: #2a1420;
+
+    /* ===== SURFACE COLORS (Glassmorphism) ===== */
+    --md-surface: rgba(255, 255, 255, 0.08);
+    --md-surface-light: rgba(255, 255, 255, 0.12);
+    --md-surface-elevated: rgba(255, 255, 255, 0.15);
+    --md-on-surface: #ffffff;
+    --md-on-surface-variant: rgba(255, 255, 255, 0.7);
+
+    /* Glass specific */
+    --md-glass-blur: blur(24px);
+    --md-glass-blur-heavy: blur(40px);
+    --md-glass-border: rgba(255, 255, 255, 0.18);
+    --md-glass-glow: rgba(167, 139, 250, 0.3);
+
+    /* ===== STATE COLORS ===== */
+    --md-error: hsl(0, 84%, 70%);
+    --md-on-error: #2a0a0a;
+    --md-success: hsl(142, 70%, 65%);
+    --md-warning: hsl(38, 100%, 70%);
+
+    /* ===== OUTLINE ===== */
+    --md-outline: rgba(255, 255, 255, 0.25);
+    --md-outline-variant: rgba(255, 255, 255, 0.12);
+    --md-scrim: rgba(0, 0, 0, 0.6);
+
+    /* ===== ELEVATION (Soft Diffused Shadows) ===== */
+    --md-elevation-1:
+        0 2px 4px rgba(0, 0, 0, 0.25),
+        0 1px 2px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    --md-elevation-2:
+        0 4px 8px rgba(0, 0, 0, 0.3),
+        0 2px 4px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    --md-elevation-3:
+        0 8px 16px rgba(0, 0, 0, 0.35),
+        0 4px 8px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    --md-elevation-4:
+        0 12px 24px rgba(0, 0, 0, 0.4),
+        0 6px 12px rgba(0, 0, 0, 0.25),
+        inset 0 2px 0 rgba(255, 255, 255, 0.12);
+    --md-elevation-5:
+        0 16px 32px rgba(0, 0, 0, 0.45),
+        0 8px 16px rgba(0, 0, 0, 0.3),
+        inset 0 2px 0 rgba(255, 255, 255, 0.15);
+
+    /* ===== SHAPES (Large Rounded Corners for MD3) ===== */
+    --md-shape-corner-none: 0px;
+    --md-shape-corner-extra-small: 8px;
+    --md-shape-corner-small: 12px;
+    --md-shape-corner-medium: 16px;
+    --md-shape-corner-large: 24px;
+    --md-shape-corner-extra-large: 32px;
+    --md-shape-corner-full: 999px;
+
+    /* ===== MOTION TOKENS ===== */
+    --md-motion-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
+    --md-motion-easing-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
+    --md-motion-easing-emphasized-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);
+    --md-motion-easing-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --md-motion-easing-bounce: cubic-bezier(0.68, -0.55, 0.27, 1.55);
+
+    /* Duration */
+    --md-motion-duration-short1: 50ms;
+    --md-motion-duration-short2: 100ms;
+    --md-motion-duration-short3: 150ms;
+    --md-motion-duration-short4: 200ms;
+    --md-motion-duration-medium1: 250ms;
+    --md-motion-duration-medium2: 300ms;
+    --md-motion-duration-medium3: 350ms;
+    --md-motion-duration-medium4: 400ms;
+    --md-motion-duration-long1: 450ms;
+    --md-motion-duration-long2: 500ms;
+    --md-motion-duration-long3: 600ms;
+    --md-motion-duration-extra-long: 800ms;
+}
+
+/* =====================================================================
+   BASE STYLES
+   ===================================================================== */
+
+* {
+    box-sizing: border-box;
+}
+
+.md3-overlay-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    pointer-events: none;
+    font-family: 'Roboto', 'Google Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.md3-overlay-container>* {
+    pointer-events: auto;
+}
+
+.md3-hidden {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+/* =====================================================================
+   SPECTATOR OVERLAY (Player Dead, Others Alive)
+   ===================================================================== */
+
+.md3-spectator-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(ellipse at center,
+            rgba(0, 0, 0, 0) 0%,
+            rgba(0, 0, 0, 0.85) 100%);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    padding-bottom: 12%;
+    opacity: 0;
+    animation: md3-fade-in 800ms var(--md-motion-easing-emphasized-decelerate) forwards;
+}
+
+.md3-spectator-content {
+    text-align: center;
+}
+
+.md3-spectator-title {
+    font-size: clamp(32px, 6vw, 56px);
+    font-weight: 700;
+    color: var(--md-error);
+    margin: 0;
+    letter-spacing: 4px;
+    text-shadow:
+        0 0 40px rgba(255, 100, 100, 0.7),
+        0 0 80px rgba(255, 100, 100, 0.4);
+    opacity: 0;
+    transform: translateY(30px) scale(0.9);
+    animation: md3-slide-up-scale 600ms var(--md-motion-easing-spring) 200ms forwards;
+}
+
+.md3-spectator-subtitle {
+    font-size: clamp(16px, 2.5vw, 22px);
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 20px 0 0 0;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: md3-slide-up 600ms var(--md-motion-easing-emphasized-decelerate) 400ms forwards;
+}
+
+/* =====================================================================
+   GAME OVER OVERLAY (All Players Dead)
+   ===================================================================== */
+
+.md3-game-over-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 8, 20, 0.6);
+    backdrop-filter: var(--md-glass-blur-heavy);
+    -webkit-backdrop-filter: var(--md-glass-blur-heavy);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    animation: md3-fade-in 500ms var(--md-motion-easing-emphasized-decelerate) forwards;
+}
+
+/* =====================================================================
+   MD3 FROSTED GLASS CARD
+   ===================================================================== */
+
+.md3-card {
+    background: linear-gradient(135deg,
+            rgba(255, 255, 255, 0.15) 0%,
+            rgba(255, 255, 255, 0.05) 100%);
+    backdrop-filter: var(--md-glass-blur);
+    -webkit-backdrop-filter: var(--md-glass-blur);
+    border: 1px solid var(--md-glass-border);
+    border-radius: var(--md-shape-corner-extra-large);
+    padding: 48px 56px;
+    min-width: 420px;
+    max-width: 90vw;
+    box-shadow: var(--md-elevation-5);
+    text-align: center;
+
+    /* Pop-in animation with spring effect */
+    opacity: 0;
+    transform: scale(0.7) translateY(50px);
+    animation: md3-pop-in 700ms var(--md-motion-easing-spring) 100ms forwards;
+}
+
+.md3-card-title {
+    font-size: clamp(28px, 5vw, 44px);
+    font-weight: 700;
+    color: var(--md-error);
+    margin: 0 0 36px 0;
+    letter-spacing: 2px;
+    text-shadow: 0 0 30px rgba(255, 100, 100, 0.5);
+
+    /* Staggered animation */
+    opacity: 0;
+    transform: translateY(25px);
+    animation: md3-slide-up 500ms var(--md-motion-easing-emphasized-decelerate) 400ms forwards;
+}
+
+.md3-stats-container {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--md-shape-corner-medium);
+    padding: 24px 28px;
+    margin-bottom: 36px;
+
+    /* Staggered animation */
+    opacity: 0;
+    transform: translateY(25px);
+    animation: md3-slide-up 500ms var(--md-motion-easing-emphasized-decelerate) 500ms forwards;
+}
+
+.md3-stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 16px;
+    color: var(--md-on-surface);
+}
+
+.md3-stat-row+.md3-stat-row {
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.md3-stat-label {
+    color: var(--md-on-surface-variant);
+    font-weight: 400;
+}
+
+.md3-stat-value {
+    font-weight: 500;
+    color: var(--md-primary);
+    text-shadow: 0 0 15px var(--md-glass-glow);
+}
+
+.md3-actions {
+    /* Staggered animation */
+    opacity: 0;
+    transform: translateY(25px);
+    animation: md3-slide-up 500ms var(--md-motion-easing-emphasized-decelerate) 600ms forwards;
+}
+
+/* =====================================================================
+   MD3 FILLED BUTTON (Frosted Glass Style)
+   ===================================================================== */
+
+.md3-filled-button {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 140px;
+    height: 52px;
+    padding: 0 32px;
+
+    background: linear-gradient(135deg,
+            var(--md-primary) 0%,
+            var(--md-primary-dark) 100%);
+    color: var(--md-on-primary);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--md-shape-corner-full);
+
+    font-family: 'Roboto', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+
+    cursor: pointer;
+    overflow: hidden;
+    box-shadow:
+        var(--md-elevation-2),
+        0 0 20px var(--md-glass-glow);
+
+    transition:
+        box-shadow var(--md-motion-duration-short4) var(--md-motion-easing-emphasized),
+        transform var(--md-motion-duration-short4) var(--md-motion-easing-emphasized),
+        filter var(--md-motion-duration-short4) var(--md-motion-easing-emphasized);
+
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+
+/* Hover: Scale up + brightness increase */
+.md3-filled-button:hover {
+    box-shadow:
+        var(--md-elevation-4),
+        0 0 35px var(--md-glass-glow);
+    transform: scale(1.05) translateY(-2px);
+    filter: brightness(1.1);
+}
+
+/* Active/Pressed: Scale down */
+.md3-filled-button:active {
+    box-shadow: var(--md-elevation-1);
+    transform: scale(0.95);
+    filter: brightness(0.95);
+}
+
+/* Focus ring */
+.md3-filled-button:focus-visible {
+    outline: 3px solid var(--md-primary);
+    outline-offset: 3px;
+}
+
+/* =====================================================================
+   RIPPLE EFFECT
+   ===================================================================== */
+
+.md3-ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.4);
+    transform: scale(0);
+    animation: md3-ripple 600ms linear forwards;
+    pointer-events: none;
+}
+
+/* =====================================================================
+   WAIT MESSAGE (Non-Host)
+   ===================================================================== */
+
+.md3-wait-message {
+    font-size: 14px;
+    color: var(--md-on-surface-variant);
+    font-style: italic;
+    margin-top: 16px;
+}
+
+/* =====================================================================
+   HUD STYLES (Top-Left Status Display)
+   ===================================================================== */
+
+.md3-hud {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    gap: 14px;
+    z-index: 100;
+    font-family: 'Roboto', sans-serif;
+    transition: opacity 500ms var(--md-motion-easing-emphasized);
+}
+
+.md3-hud.fading {
+    opacity: 0;
+}
+
+.md3-hud-item {
+    background: linear-gradient(135deg,
+            rgba(0, 0, 0, 0.5) 0%,
+            rgba(0, 0, 0, 0.3) 100%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 12px 18px;
+    border-radius: var(--md-shape-corner-small);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: white;
+    font-size: 14px;
+    min-width: 70px;
+    text-align: center;
+    box-shadow: var(--md-elevation-1);
+    transition: all 300ms var(--md-motion-easing-emphasized);
+}
+
+.md3-hud-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--md-elevation-2);
+}
+
+.md3-hud-label {
+    font-size: 10px;
+    opacity: 0.7;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+}
+
+.md3-hud-value {
+    font-weight: 700;
+    font-size: 18px;
+}
+
+.md3-hud-item.fwd {
+    color: #FFE082;
+    border-color: rgba(255, 224, 130, 0.3);
+    box-shadow:
+        var(--md-elevation-1),
+        0 0 15px rgba(255, 224, 130, 0.2);
+}
+
+.md3-hud-item.aft {
+    color: #FFAB91;
+    border-color: rgba(255, 171, 145, 0.3);
+    box-shadow:
+        var(--md-elevation-1),
+        0 0 15px rgba(255, 171, 145, 0.2);
+}
+
+.md3-hud-item.hull {
+    color: #81D4FA;
+    border-color: rgba(129, 212, 250, 0.3);
+    box-shadow:
+        var(--md-elevation-1),
+        0 0 15px rgba(129, 212, 250, 0.2);
+}
+
+/* Kill Counter */
+.md3-hud-item.kills {
+    color: #EF5350;
+    border-color: rgba(239, 83, 80, 0.3);
+    box-shadow:
+        var(--md-elevation-1),
+        0 0 15px rgba(239, 83, 80, 0.2);
+}
+
+/* Laser Cooldown Indicator */
+.md3-hud-item.laser {
+    color: #B39DDB;
+    border-color: rgba(179, 157, 219, 0.3);
+    box-shadow:
+        var(--md-elevation-1),
+        0 0 15px rgba(179, 157, 219, 0.2);
+    min-width: 100px;
+}
+
+.md3-laser-bar {
+    width: 100%;
+    height: 6px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 3px;
+    margin: 6px 0 4px 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.md3-laser-fill {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, #7C4DFF 0%, #B388FF 50%, #E1BEE7 100%);
+    border-radius: 3px;
+    transition: width 0.1s linear;
+    box-shadow: 0 0 10px rgba(179, 157, 219, 0.5);
+}
+
+.md3-laser-status {
+    font-size: 10px !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.md3-hud-item.laser.ready {
+    animation: md3-pulse 1.5s ease-in-out infinite;
+}
+
+.md3-hud-item.laser.ready .md3-laser-status {
+    color: #00E676;
+}
+
+@keyframes md3-pulse {
+
+    0%,
+    100% {
+        box-shadow: var(--md-elevation-1), 0 0 15px rgba(179, 157, 219, 0.2);
+    }
+
+    50% {
+        box-shadow: var(--md-elevation-2), 0 0 25px rgba(0, 230, 118, 0.4);
+    }
+}
+
+/* Reload Hint */
+.md3-hud-item.reload {
+    color: #FFAB40;
+    border-color: rgba(255, 171, 64, 0.4);
+    background: rgba(255, 171, 64, 0.1);
+    box-shadow:
+        var(--md-elevation-1),
+        0 0 20px rgba(255, 171, 64, 0.3);
+    animation: md3-blink 1s ease-in-out infinite;
+}
+
+@keyframes md3-blink {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
+}
+
+/* =====================================================================
+   MD3 TIMER (Top Center)
+   ===================================================================== */
+.md3-timer {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    background: var(--md-glass-surface);
+    backdrop-filter: blur(var(--md-glass-blur));
+    -webkit-backdrop-filter: blur(var(--md-glass-blur));
+    border: 1px solid var(--md-glass-border);
+    border-radius: var(--md-shape-corner-medium);
+
+    padding: 8px 16px;
+    box-shadow: var(--md-elevation-2);
+
+    font-family: 'Roboto Mono', monospace;
+    color: var(--md-sys-color-primary);
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 1px;
+}
+
+.md3-timer-icon {
+    font-size: 16px;
+    opacity: 0.8;
+}
+
+/* =====================================================================
+   MULTIPLAYER PARTY HUD (Top Right)
+   ===================================================================== */
+
+.md3-party-hud {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 200;
+    background: linear-gradient(135deg,
+            rgba(0, 0, 0, 0.6) 0%,
+            rgba(0, 0, 0, 0.4) 100%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: var(--md-shape-corner-large);
+    padding: 12px 16px;
+    min-width: 180px;
+    box-shadow: var(--md-elevation-2);
+}
+
+.md3-party-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.md3-party-members {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.md3-party-member {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--md-shape-corner-small);
+    transition: all 200ms ease;
+}
+
+.md3-party-member.self {
+    background: rgba(0, 191, 255, 0.15);
+    border-left: 3px solid #00bfff;
+}
+
+.md3-party-member.dead {
+    opacity: 0.5;
+    background: rgba(239, 83, 80, 0.1);
+}
+
+.md3-party-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: #fff;
+}
+
+.md3-party-name .dead-tag {
+    color: #EF5350;
+    font-size: 11px;
+    font-weight: 600;
+    margin-left: 4px;
+}
+
+.md3-party-kills {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    white-space: nowrap;
+}
+
+
+
+/* Toast Notification for Clipboard Feedback */
+.md3-toast {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(30, 30, 40, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    color: #00E676;
+    padding: 16px 32px;
+    border-radius: var(--md-shape-corner-large);
+    border: 1px solid rgba(0, 230, 118, 0.3);
+    font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    z-index: 10000;
+    box-shadow: var(--md-elevation-4), 0 0 40px rgba(0, 230, 118, 0.3);
+    animation: md3-toast-in 300ms var(--md-motion-easing-emphasized-decelerate);
+    pointer-events: none;
+}
+
+@keyframes md3-toast-in {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+/* =====================================================================
+   ON-SCREEN GAME CONTROLS (FABs)
+   ===================================================================== */
+
+.md3-controls-overlay {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+.md3-controls-overlay>* {
+    pointer-events: auto;
+}
+
+.md3-controls-left {
+    display: flex;
+    gap: 12px;
+}
+
+.md3-controls-right {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    align-items: flex-end;
+}
+
+/* Floating Action Button Base */
+.md3-fab {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: var(--md-shape-corner-large);
+    font-family: 'Roboto', sans-serif;
+    cursor: pointer;
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    transition: all var(--md-motion-duration-short4) var(--md-motion-easing-emphasized);
+}
+
+.md3-fab-icon {
+    font-size: 24px;
+    margin-bottom: 4px;
+}
+
+.md3-fab-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+/* Primary FAB (Laser) */
+.md3-fab-primary {
+    background: linear-gradient(135deg, var(--md-primary) 0%, var(--md-primary-dark) 100%);
+    color: white;
+    box-shadow:
+        var(--md-elevation-3),
+        0 0 25px var(--md-glass-glow);
+}
+
+.md3-fab-primary:hover {
+    transform: scale(1.08);
+    box-shadow:
+        var(--md-elevation-4),
+        0 0 40px var(--md-glass-glow);
+    filter: brightness(1.15);
+}
+
+.md3-fab-primary:active {
+    transform: scale(0.92);
+    filter: brightness(0.9);
+}
+
+/* Secondary FAB (Torpedo Fwd) */
+.md3-fab-secondary {
+    background: linear-gradient(135deg, var(--md-secondary) 0%, var(--md-secondary-dark) 100%);
+    color: var(--md-on-secondary);
+    box-shadow:
+        var(--md-elevation-2),
+        0 0 20px rgba(100, 181, 246, 0.3);
+}
+
+.md3-fab-secondary:hover {
+    transform: scale(1.08);
+    box-shadow:
+        var(--md-elevation-4),
+        0 0 35px rgba(100, 181, 246, 0.4);
+    filter: brightness(1.12);
+}
+
+.md3-fab-secondary:active {
+    transform: scale(0.92);
+}
+
+/* Accent FAB (Torpedo Aft) */
+.md3-fab-accent {
+    background: linear-gradient(135deg, var(--md-accent) 0%, var(--md-accent-dark) 100%);
+    color: white;
+    box-shadow:
+        var(--md-elevation-2),
+        0 0 20px rgba(244, 143, 177, 0.3);
+}
+
+.md3-fab-accent:hover {
+    transform: scale(1.08);
+    box-shadow:
+        var(--md-elevation-4),
+        0 0 35px rgba(244, 143, 177, 0.4);
+    filter: brightness(1.12);
+}
+
+.md3-fab-accent:active {
+    transform: scale(0.92);
+}
+
+/* FAB Disabled State */
+.md3-fab:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+    filter: grayscale(0.5) !important;
+}
+
+/* FAB Cooldown Indicator */
+.md3-fab-cooldown {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 0 0 var(--md-shape-corner-large) var(--md-shape-corner-large);
+    overflow: hidden;
+}
+
+.md3-fab-cooldown-fill {
+    height: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    width: 0%;
+    transition: width 50ms linear;
+}
+
+/* =====================================================================
+   MENU OVERLAY (DOM-Based Menus)
+   ===================================================================== */
+
+.md3-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 500;
+    padding: 40px;
+    background: radial-gradient(ellipse at center,
+            rgba(0, 0, 0, 0.3) 0%,
+            rgba(0, 0, 0, 0.7) 100%);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.md3-menu-title {
+    font-size: clamp(40px, 8vw, 72px);
+    font-weight: 700;
+    color: #00e5ff;
+    text-align: center;
+    margin: 0 0 48px 0;
+    letter-spacing: 6px;
+    text-shadow:
+        0 0 40px rgba(0, 229, 255, 0.7),
+        0 0 80px rgba(0, 229, 255, 0.4),
+        0 0 120px rgba(0, 229, 255, 0.2);
+    animation: md3-title-glow 3s ease-in-out infinite alternate;
+}
+
+@keyframes md3-title-glow {
+    from {
+        text-shadow:
+            0 0 40px rgba(0, 229, 255, 0.7),
+            0 0 80px rgba(0, 229, 255, 0.4);
+    }
+
+    to {
+        text-shadow:
+            0 0 60px rgba(0, 229, 255, 0.9),
+            0 0 100px rgba(0, 229, 255, 0.6),
+            0 0 140px rgba(0, 229, 255, 0.3);
+    }
+}
+
+.md3-menu-subtitle {
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 40px;
+    font-weight: 400;
+}
+
+.md3-menu-options {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.md3-menu-btn {
+    position: relative;
+    width: 100%;
+    padding: 20px 32px;
+    background: linear-gradient(135deg,
+            rgba(255, 255, 255, 0.1) 0%,
+            rgba(255, 255, 255, 0.05) 100%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: var(--md-shape-corner-large);
+    color: white;
+    font-family: 'Roboto', sans-serif;
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    cursor: pointer;
+    overflow: hidden;
+    box-shadow: var(--md-elevation-2);
+    transition: all var(--md-motion-duration-medium2) var(--md-motion-easing-emphasized);
+}
+
+.md3-menu-btn:hover {
+    background: linear-gradient(135deg,
+            rgba(255, 255, 255, 0.18) 0%,
+            rgba(255, 255, 255, 0.08) 100%);
+    transform: scale(1.03) translateY(-3px);
+    box-shadow:
+        var(--md-elevation-4),
+        0 0 30px rgba(0, 229, 255, 0.2);
+    border-color: rgba(0, 229, 255, 0.4);
+    color: #00e5ff;
+}
+
+.md3-menu-btn:active {
+    transform: scale(0.97);
+    box-shadow: var(--md-elevation-1);
+}
+
+/* Active/Selected menu button */
+.md3-menu-btn.active {
+    background: linear-gradient(135deg,
+            rgba(0, 229, 255, 0.25) 0%,
+            rgba(0, 229, 255, 0.1) 100%);
+    border-color: rgba(0, 229, 255, 0.5);
+    color: #00e5ff;
+    box-shadow:
+        var(--md-elevation-3),
+        0 0 25px rgba(0, 229, 255, 0.3);
+}
+
+.md3-menu-hint {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.4);
+    margin-top: 32px;
+    text-align: center;
+}
+
+/* =====================================================================
+   NAME INPUT OVERLAY
+   ===================================================================== */
+
+.md3-name-input-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 500;
+    padding: 40px;
+}
+
+.md3-name-card {
+    background: linear-gradient(135deg,
+            rgba(255, 255, 255, 0.12) 0%,
+            rgba(255, 255, 255, 0.04) 100%);
+    backdrop-filter: var(--md-glass-blur);
+    -webkit-backdrop-filter: var(--md-glass-blur);
+    border: 1px solid var(--md-glass-border);
+    border-radius: var(--md-shape-corner-extra-large);
+    padding: 48px;
+    text-align: center;
+    box-shadow: var(--md-elevation-4);
+    opacity: 0;
+    transform: scale(0.9) translateY(30px);
+    animation: md3-pop-in 600ms var(--md-motion-easing-spring) forwards;
+}
+
+.md3-name-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #00bfff;
+    margin: 0 0 12px 0;
+    letter-spacing: 3px;
+    text-shadow: 0 0 30px rgba(0, 191, 255, 0.6);
+}
+
+.md3-name-subtitle {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0 0 32px 0;
+}
+
+.md3-name-input {
+    width: 100%;
+    max-width: 320px;
+    padding: 16px 24px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(0, 191, 255, 0.4);
+    border-radius: var(--md-shape-corner-medium);
+    color: #00ff88;
+    font-family: 'Courier New', monospace;
+    font-size: 24px;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: 2px;
+    outline: none;
+    transition: all 300ms var(--md-motion-easing-emphasized);
+}
+
+.md3-name-input:focus {
+    border-color: rgba(0, 191, 255, 0.8);
+    box-shadow: 0 0 30px rgba(0, 191, 255, 0.3);
+}
+
+.md3-name-input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.md3-name-confirm-btn {
+    margin-top: 24px;
+    padding: 14px 40px;
+    background: linear-gradient(135deg, #00bfff 0%, #0080ff 100%);
+    border: none;
+    border-radius: var(--md-shape-corner-full);
+    color: white;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: var(--md-elevation-2), 0 0 25px rgba(0, 191, 255, 0.4);
+    transition: all 200ms var(--md-motion-easing-emphasized);
+}
+
+.md3-name-confirm-btn:hover {
+    transform: scale(1.05);
+    box-shadow: var(--md-elevation-4), 0 0 40px rgba(0, 191, 255, 0.5);
+}
+
+.md3-name-confirm-btn:active {
+    transform: scale(0.95);
+}
+
+/* =====================================================================
+   PAGE TRANSITION ANIMATIONS
+   ===================================================================== */
+
+.md3-page-exit {
+    animation: md3-menu-exit 500ms var(--md-motion-easing-emphasized-accelerate) forwards;
+}
+
+.md3-page-enter {
+    animation: md3-menu-enter 600ms var(--md-motion-easing-emphasized-decelerate) forwards;
+}
+
+@keyframes md3-menu-exit {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: scale(1.1);
+        filter: blur(8px);
+    }
+}
+
+@keyframes md3-menu-enter {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* =====================================================================
+   SCREEN EFFECTS (Shake, Flash)
+   ===================================================================== */
+
+.md3-screen-shake {
+    animation: md3-shake 300ms ease-out;
+}
+
+@keyframes md3-shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    10%,
+    50%,
+    90% {
+        transform: translateX(-6px);
+    }
+
+    30%,
+    70% {
+        transform: translateX(6px);
+    }
+}
+
+.md3-screen-flash {
+    animation: md3-flash 200ms ease-out;
+}
+
+@keyframes md3-flash {
+    0% {
+        filter: brightness(2) saturate(0);
+    }
+
+    100% {
+        filter: brightness(1) saturate(1);
+    }
+}
+
+/* Damage vignette */
+.md3-damage-vignette {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9998;
+    background: radial-gradient(ellipse at center,
+            transparent 40%,
+            rgba(255, 0, 0, 0.4) 100%);
+    opacity: 0;
+    transition: opacity 150ms ease-out;
+}
+
+.md3-damage-vignette.active {
+    opacity: 1;
+}
+
+/* =====================================================================
+   KEYFRAME ANIMATIONS
+   ===================================================================== */
+
+@keyframes md3-fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes md3-fade-out {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes md3-slide-up {
+    from {
+        opacity: 0;
+        transform: translateY(25px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes md3-slide-up-scale {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes md3-pop-in {
+    from {
+        opacity: 0;
+        transform: scale(0.7) translateY(40px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes md3-ripple {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+/* Stagger animation delays helper classes */
+.md3-stagger-1 {
+    animation-delay: 100ms;
+}
+
+.md3-stagger-2 {
+    animation-delay: 200ms;
+}
+
+.md3-stagger-3 {
+    animation-delay: 300ms;
+}
+
+.md3-stagger-4 {
+    animation-delay: 400ms;
+}
+
+.md3-stagger-5 {
+    animation-delay: 500ms;
+}
+
+/* Game Start Transition Flash */
+.md3-game-start-flash {
+    animation: md3-game-start 600ms ease-out forwards;
+}
+
+@keyframes md3-game-start {
+    0% {
+        filter: brightness(1);
+    }
+
+    20% {
+        filter: brightness(2.5);
+    }
+
+    100% {
+        filter: brightness(1);
+    }
+}
+
+/* Stun Shake Effect */
+.md3-stun-shake {
+    animation: md3-stun-shake 0.1s ease-in-out infinite;
+}
+
+@keyframes md3-stun-shake {
+
+    0%,
+    100% {
+        transform: translate(0, 0);
+    }
+
+    25% {
+        transform: translate(-5px, 3px);
+    }
+
+    50% {
+        transform: translate(5px, -3px);
+    }
+
+    75% {
+        transform: translate(-3px, -5px);
+    }
+}
+
+/* =====================================================================
+   RESPONSIVE ADJUSTMENTS
+   ===================================================================== */
+
+@media (max-width: 768px) {
+    .md3-card {
+        padding: 32px 28px;
+        min-width: auto;
+        width: 95vw;
+    }
+
+    .md3-fab {
+        width: 64px;
+        height: 64px;
+    }
+
+    .md3-fab-icon {
+        font-size: 20px;
+    }
+
+    .md3-fab-label {
+        font-size: 9px;
+    }
+
+    .md3-controls-right {
+        gap: 10px;
+    }
+
+    .md3-hud {
+        gap: 8px;
+    }
+
+    .md3-hud-item {
+        padding: 8px 12px;
+        min-width: 60px;
+    }
+
+    .md3-hud-value {
+        font-size: 16px;
+    }
+}
+
+/* =====================================================================
+   DEATH BANNER (Bottom of screen, non-blocking spectator mode)
+   ===================================================================== */
+
+.md3-death-banner {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 500;
+    background: linear-gradient(135deg,
+            rgba(239, 83, 80, 0.2) 0%,
+            rgba(183, 28, 28, 0.3) 100%);
+    backdrop-filter: blur(var(--md-glass-blur));
+    -webkit-backdrop-filter: blur(var(--md-glass-blur));
+    border: 1px solid rgba(239, 83, 80, 0.4);
+    border-radius: var(--md-shape-corner-large);
+    padding: 16px 24px;
+    box-shadow: var(--md-elevation-3),
+        0 0 30px rgba(239, 83, 80, 0.3);
+    animation: md3-death-slide-up 500ms var(--md-motion-easing-emphasized) forwards;
+}
+
+@keyframes md3-death-slide-up {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(50px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.md3-death-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.md3-death-icon {
+    font-size: 36px;
+    animation: md3-pulse 1.5s infinite;
+}
+
+.md3-death-text {
+    text-align: left;
+}
+
+.md3-death-text h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #EF5350;
+    text-shadow: 0 0 10px rgba(239, 83, 80, 0.5);
+}
+
+.md3-death-text p {
+    margin: 4px 0 0 0;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.md3-btn-leave {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: var(--md-shape-corner-medium);
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 200ms var(--md-motion-easing-standard);
+    white-space: nowrap;
+}
+
+.md3-btn-leave:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+/* =====================================================================
+   MD3 SWITCH (Toggle)
+   ===================================================================== */
+
+.md3-switch {
+    position: relative;
+    display: inline-block;
+    width: 52px;
+    height: 28px;
+}
+
+.md3-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.md3-switch-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 28px;
+    transition: all 200ms var(--md-motion-easing-emphasized);
+}
+
+.md3-switch-slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    transition: all 200ms var(--md-motion-easing-spring);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.md3-switch input:checked+.md3-switch-slider {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ff4757 100%);
+    border-color: #ff6b6b;
+    box-shadow: 0 0 15px rgba(255, 107, 107, 0.4);
+}
+
+.md3-switch input:checked+.md3-switch-slider:before {
+    transform: translateX(24px);
+    background: white;
+}
+
+/* =====================================================================
+   MD3 MODAL OVERLAY
+   ===================================================================== */
+
+.md3-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10001;
+    animation: md3-fade-in 200ms var(--md-motion-easing-emphasized-decelerate);
+}
+
+.md3-modal-content {
+    background: linear-gradient(135deg,
+            rgba(40, 40, 50, 0.95) 0%,
+            rgba(30, 30, 40, 0.98) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: var(--md-shape-corner-extra-large);
+    box-shadow: var(--md-elevation-5), 0 0 60px rgba(0, 0, 0, 0.5);
+    animation: md3-pop-in 300ms var(--md-motion-easing-spring);
+}

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <title>SPACE SHOOTER - Frosted Material Design</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description"
+        content="Space Shooter - A browser-based space combat game with stunning visuals and multiplayer support">
+    <meta name="theme-color" content="#6750A4">
+
+    <!-- Google Fonts: Roboto -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/md3.css?v=5">
+
+    <!-- PeerJS for WebRTC signaling -->
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+
+    <style>
+        /* Critical inline styles for immediate load */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3a 50%, #0a0a1a 100%);
+            font-family: 'Roboto', sans-serif;
+        }
+
+        #gameCanvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        /* Ensure menus appear above canvas */
+        .md3-menu-overlay,
+        .md3-name-input-overlay {
+            z-index: 500;
+        }
+
+        .md3-overlay-container {
+            z-index: 9999;
+        }
+
+        .md3-controls-overlay {
+            z-index: 1000;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- =====================================================================
+         GAME CANVAS (Background Layer)
+         ===================================================================== -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- =====================================================================
+         MD3 UI OVERLAY LAYER
+         ===================================================================== -->
+    <div id="md3-ui" class="md3-overlay-container">
+
+        <!-- DEATH BANNER: Bottom-positioned, non-blocking for spectating -->
+        <div id="md3-death-banner" class="md3-death-banner md3-hidden">
+            <div class="md3-death-content">
+                <span class="md3-death-icon">💀</span>
+                <div class="md3-death-text">
+                    <h3>SHIP DESTROYED</h3>
+                    <p id="md3-death-status">Waiting for revival... (Defeat a boss to revive)</p>
+                </div>
+                <button id="md3-btn-leave" class="md3-btn-leave">🚪 Leave Room</button>
+            </div>
+        </div>
+
+        <!-- GAME OVER OVERLAY: When all players are dead -->
+        <div id="md3-gameover" class="md3-game-over-overlay md3-hidden">
+            <div class="md3-card">
+                <h1 class="md3-card-title">MISSION FAILED</h1>
+
+                <div class="md3-stats-container">
+                    <div class="md3-stat-row">
+                        <span class="md3-stat-label">Enemies Destroyed</span>
+                        <span class="md3-stat-value" id="md3-score-enemies">0</span>
+                    </div>
+                    <div class="md3-stat-row">
+                        <span class="md3-stat-label">Survival Time</span>
+                        <span class="md3-stat-value" id="md3-score-time">0:00</span>
+                    </div>
+                </div>
+
+                <div class="md3-actions">
+                    <!-- Restart Button: Only shown to Host -->
+                    <button id="md3-btn-restart" class="md3-filled-button">
+                        🔄 Restart Mission
+                    </button>
+
+                    <!-- Wait Message: Shown to non-Host players -->
+                    <p id="md3-wait-msg" class="md3-wait-message md3-hidden">
+                        Waiting for Host to restart...
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- =====================================================================
+         MD3 HUD (Gameplay Status - Top Left)
+         ===================================================================== -->
+    <div id="md3-hud" class="md3-hud md3-hidden">
+        <!-- Kill Counter -->
+        <div class="md3-hud-item kills">
+            <div class="md3-hud-label">💀 KILLS</div>
+            <div class="md3-hud-value" id="md3-kills">0</div>
+        </div>
+        <div class="md3-hud-item fwd">
+            <div class="md3-hud-label">FWD</div>
+            <div class="md3-hud-value" id="md3-torpFwd">12</div>
+        </div>
+        <div class="md3-hud-item aft">
+            <div class="md3-hud-label">AFT</div>
+            <div class="md3-hud-value" id="md3-torpAft">5</div>
+        </div>
+        <div class="md3-hud-item hull">
+            <div class="md3-hud-label">HULL</div>
+            <div class="md3-hud-value" id="md3-hullDisplay">100%</div>
+        </div>
+        <!-- Laser Cooldown Indicator -->
+        <div class="md3-hud-item laser" id="md3-laser-indicator">
+            <div class="md3-hud-label">LASER</div>
+            <div class="md3-laser-bar">
+                <div class="md3-laser-fill" id="md3-laser-fill"></div>
+            </div>
+            <div class="md3-hud-value md3-laser-status" id="md3-laser-status">READY</div>
+        </div>
+        <!-- Reload Hint (shows when ammo depleted) -->
+        <div id="md3-reload-hint" class="md3-hud-item reload md3-hidden">
+            <div class="md3-hud-label">AMMO DEPLETED</div>
+            <div class="md3-hud-value">Press R</div>
+        </div>
+    </div>
+
+    <!-- =====================================================================
+         MD3 TIMER (Top Center - for Survival/Game Time)
+         ===================================================================== -->
+    <div id="md3-timer" class="md3-timer md3-hidden">
+        <span class="md3-timer-icon">⏱️</span>
+        <span id="md3-timer-value">00:00</span>
+    </div>
+
+    <!-- =====================================================================
+         MULTIPLAYER PARTY HUD (Top Right - shows during MP gameplay)
+         ===================================================================== -->
+    <div id="md3-party-hud" class="md3-party-hud md3-hidden">
+        <div class="md3-party-title">🌐 SQUADRON</div>
+        <div class="md3-party-members" id="md3-party-members">
+            <!-- Dynamically populated -->
+        </div>
+    </div>
+
+    <!-- FAB controls removed - using keyboard: Space=Laser, Shift=FwdTorp, Ctrl=AftTorp, R=Reload -->
+
+    <!-- =====================================================================
+         LEGACY ELEMENTS (Hidden, for backwards compatibility)
+         ===================================================================== -->
+
+    <!-- Legacy Menu Controls (hidden, replaced by DOM menus) -->
+    <div id="menuControls" style="display:none;">
+        <h3>How to Play</h3>
+        <div>Mouse aim: Ship auto-rotates</div>
+        <div>On-screen buttons: Fire weapons</div>
+    </div>
+
+    <!-- Legacy Timer -->
+    <div id="timer">1:00</div>
+
+    <!-- Legacy Game UI (hidden, using new MD3 HUD) -->
+    <div id="gameUI" style="display:none;">
+        <span id="torpFwd">12</span>
+        <span id="torpAft">5</span>
+        <span id="hullDisplay">100%</span>
+        <span id="reloadMsg"></span>
+    </div>
+
+    <!-- Player 2 HUD (Multiplayer) -->
+    <div id="player2UI">
+        <div class="p2-box">
+            <div class="label">PLAYER 2</div>
+            <div class="hull-bar">
+                <div class="fill" id="p2HullBar" style="width: 100%"></div>
+            </div>
+            <div id="p2HullPercent">100%</div>
+        </div>
+    </div>
+
+    <!-- Connection Status (Multiplayer) -->
+    <div id="connectionStatus">
+        <span id="connectionDot">●</span>
+        <span id="connectionText">CONNECTED</span>
+    </div>
+
+    <!-- Clipboard Feedback Toast -->
+    <div id="clipboardFeedback">Copied!</div>
+
+    <!-- =====================================================================
+         SCRIPTS
+         ===================================================================== -->
+    <script src="js/globals.js"></script>
+    <script src="js/constants.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/assets.js"></script>
+    <script src="js/effects.js"></script>
+    <script src="js/entities.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/md3-ui.js"></script>
+    <script src="js/input-manager.js"></script>
+    <script src="js/network.js"></script>
+    <script src="js/game.js"></script>
+
+    <script>
+        // =====================================================================
+        // GAME INITIALIZATION
+        // =====================================================================
+
+        // Resize game canvas
+        resizeGame();
+
+        // Start game loop
+        requestAnimationFrame(loop);
+
+        // Override default keyboard gameplay to prefer mouse controls
+        // Keep keyboard only for text input in NAME_INPUT state
+        // (InputManager handles gameplay, MenuManager handles menus)
+
+        // Show HUD when game starts
+        function showGameplayUI() {
+            const hud = document.getElementById('md3-hud');
+            if (hud) hud.classList.remove('md3-hidden');
+
+            const controls = document.getElementById('md3-controls');
+            if (controls) controls.classList.remove('md3-hidden');
+        }
+
+        // Hook into game state changes
+        const originalStartNormalMode = typeof startNormalMode !== 'undefined' ? startNormalMode : null;
+        if (originalStartNormalMode) {
+            window.startNormalMode = function () {
+                originalStartNormalMode();
+                showGameplayUI();
+            };
+        }
+
+        const originalStartBossBattle = typeof startBossBattle !== 'undefined' ? startBossBattle : null;
+        if (originalStartBossBattle) {
+            window.startBossBattle = function (type) {
+                originalStartBossBattle(type);
+                showGameplayUI();
+            };
+        }
+
+        const originalStartMultiplayerGame = typeof startMultiplayerGame !== 'undefined' ? startMultiplayerGame : null;
+        if (originalStartMultiplayerGame) {
+            window.startMultiplayerGame = function () {
+                originalStartMultiplayerGame();
+                showGameplayUI();
+            };
+        }
+
+        // Damage feedback hook
+        const originalApplyDamage = typeof applyDamageToPlayer !== 'undefined' ? applyDamageToPlayer : null;
+        if (originalApplyDamage) {
+            window.applyDamageToPlayer = function (amount, sector) {
+                originalApplyDamage(amount, sector);
+
+                // Trigger visual feedback
+                if (typeof InputManager !== 'undefined') {
+                    InputManager.triggerScreenShake();
+                    InputManager.showDamageVignette();
+                    InputManager.updateHUD();
+                }
+            };
+        }
+
+        // Update HUD periodically
+        setInterval(() => {
+            if (typeof InputManager !== 'undefined' &&
+                typeof gameState !== 'undefined' &&
+                gameState === 'PLAYING') {
+                InputManager.updateHUD();
+            }
+        }, 200);
+
+        // =====================================================================
+        // GitHub Pages Version - No server heartbeat needed
+        // =====================================================================
+        console.log('[Space Shooter] Running on GitHub Pages - No local server required');
+    </script>
+</body>
+
+</html>

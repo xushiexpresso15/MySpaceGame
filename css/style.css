@@ -1,0 +1,210 @@
+body {
+    margin: 0;
+    overflow: hidden;
+    background: #080810;
+    color: white;
+    font-family: 'Courier New'
+}
+
+canvas {
+    display: block;
+    background: radial-gradient(circle, #1a1a2e, #000)
+}
+
+/* Menu controls info - Legacy, always hidden when using DOM menus */
+#menuControls {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(0, 0, 0, .4);
+    padding: 12px 15px;
+    border: 1px solid #333;
+    border-radius: 6px;
+    pointer-events: none;
+    font-size: 0.85em;
+    color: #888;
+    display: none !important;
+    /* Force hidden - DOM MenuManager replaces this */
+    z-index: -1;
+    /* Below everything */
+}
+
+#menuControls h3 {
+    margin: 0 0 8px 0;
+    color: #0af;
+    font-size: 1em;
+}
+
+#menuControls div {
+    margin: 4px 0;
+}
+
+/* Gameplay UI - transparent ammo boxes */
+#gameUI {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: none;
+    gap: 8px;
+    pointer-events: none;
+}
+
+.ammo-box {
+    background: rgba(0, 0, 0, .3);
+    padding: 8px 12px;
+    border: 1px solid rgba(255, 255, 255, .2);
+    border-radius: 4px;
+    font-size: 0.9em;
+    backdrop-filter: blur(2px);
+    display: inline-block;
+    margin-right: 8px;
+}
+
+.ammo-box.fwd {
+    color: #ff0;
+    border-color: rgba(255, 255, 0, .3);
+}
+
+.ammo-box.aft {
+    color: #f80;
+    border-color: rgba(255, 136, 0, .3);
+}
+
+.ammo-box.hull {
+    color: #0af;
+    border-color: rgba(0, 170, 255, .3);
+}
+
+.ammo-box .label {
+    font-size: 0.7em;
+    opacity: 0.7;
+}
+
+.ammo-box .value {
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+#reloadMsg {
+    color: #ff0;
+    display: none;
+    background: rgba(255, 255, 0, .1);
+    padding: 8px 12px;
+    border: 1px solid rgba(255, 255, 0, .3);
+    border-radius: 4px;
+    margin-left: 8px;
+}
+
+#timer {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, .8);
+    padding: 20px 40px;
+    border: 2px solid #f80;
+    border-radius: 12px;
+    pointer-events: none;
+    box-shadow: 0 0 20px rgba(255, 136, 0, .5);
+    font-size: 2em;
+    font-weight: bold;
+    color: #f80;
+    text-align: center;
+    display: none;
+}
+
+/* ========== MULTIPLAYER UI ========== */
+
+/* Player 2 HUD - top right */
+#player2UI {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: none;
+    pointer-events: none;
+}
+
+.p2-box {
+    background: rgba(0, 0, 0, .4);
+    padding: 8px 14px;
+    border: 1px solid rgba(255, 170, 0, .3);
+    border-radius: 4px;
+    font-size: 0.9em;
+    color: #fa0;
+    backdrop-filter: blur(2px);
+}
+
+.p2-box .label {
+    font-size: 0.75em;
+    opacity: 0.7;
+    margin-bottom: 4px;
+}
+
+.p2-box .hull-bar {
+    width: 100px;
+    height: 8px;
+    background: rgba(255, 0, 0, 0.3);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.p2-box .hull-bar .fill {
+    height: 100%;
+    background: linear-gradient(90deg, #0f0, #0a0);
+    transition: width 0.3s ease;
+}
+
+/* Connection status indicator */
+#connectionStatus {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, .6);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.8em;
+    display: none;
+    pointer-events: none;
+}
+
+#connectionStatus.connected {
+    color: #0f0;
+    border: 1px solid rgba(0, 255, 0, .3);
+}
+
+#connectionStatus.disconnected {
+    color: #f55;
+    border: 1px solid rgba(255, 85, 85, .3);
+}
+
+/* Clipboard action feedback */
+#clipboardFeedback {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 255, 0, .2);
+    border: 1px solid #0f0;
+    color: #0f0;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 1.2em;
+    display: none;
+    pointer-events: none;
+    animation: fadeOut 1s ease-out forwards;
+}
+
+@keyframes fadeOut {
+    0% {
+        opacity: 1;
+    }
+
+    70% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
