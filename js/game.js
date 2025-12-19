@@ -840,6 +840,11 @@ function loop(t) {
         }
         if (!player.dead) player.update(dt);
 
+        // Decrement spawn protection timer
+        if (player.spawnProtection > 0) {
+            player.spawnProtection -= dt;
+        }
+
         // Update bombs
         for (let b of bombs) b.update(dt);
         bombs = bombs.filter(b => !b.dead);
@@ -952,35 +957,41 @@ function loop(t) {
 
         // PVP: Player-to-player collision damage
         if (Network.isMultiplayer && pvpEnabled && !player.dead) {
-            for (const [id, rp] of remotePlayers) {
-                if (rp && !rp.dead) {
-                    const dist = Math.hypot(player.x - rp.x, player.y - rp.y);
-                    const collisionDist = (player.r || 25) + (rp.r || 25);
+            // Skip PVP collision if local player has spawn protection
+            if (player.spawnProtection > 0) {
+                // Still allow pushing apart without damage
+            } else {
+                for (const [id, rp] of remotePlayers) {
+                    // Skip if remote has spawn protection (synced)
+                    if (rp && !rp.dead && (!rp.spawnProtection || rp.spawnProtection <= 0)) {
+                        const dist = Math.hypot(player.x - rp.x, player.y - rp.y);
+                        const collisionDist = (player.r || 25) + (rp.r || 25);
 
-                    if (dist < collisionDist) {
-                        // Collision! Apply damage to both players
-                        const contactDamage = 15;
-                        const hitAngle = Math.atan2(rp.y - player.y, rp.x - player.x);
-                        const sector = Math.floor(((hitAngle - player.angle + Math.PI * 2.5) % (Math.PI * 2)) / (Math.PI / 2)) % 4;
+                        if (dist < collisionDist) {
+                            // Collision! Apply damage to both players
+                            const contactDamage = 15;
+                            const hitAngle = Math.atan2(rp.y - player.y, rp.x - player.x);
+                            const sector = Math.floor(((hitAngle - player.angle + Math.PI * 2.5) % (Math.PI * 2)) / (Math.PI / 2)) % 4;
 
-                        // Apply damage to local player
-                        if (player.shield[sector] > 0) {
-                            player.shield[sector] -= contactDamage;
-                            player.hits.push({ angle: hitAngle, sector: sector, life: 0.5 });
-                        } else {
-                            player.hull -= contactDamage;
+                            // Apply damage to local player
+                            if (player.shield[sector] > 0) {
+                                player.shield[sector] -= contactDamage;
+                                player.hits.push({ angle: hitAngle, sector: sector, life: 0.5 });
+                            } else {
+                                player.hull -= contactDamage;
+                            }
+
+                            // Send damage to remote player
+                            Network.sendPvpDamage(id, contactDamage, player.x, player.y, hitAngle + Math.PI);
+
+                            // Push players apart
+                            const pushForce = 50;
+                            const pushAngle = Math.atan2(player.y - rp.y, player.x - rp.x);
+                            player.x += Math.cos(pushAngle) * pushForce * dt;
+                            player.y += Math.sin(pushAngle) * pushForce * dt;
+
+                            explosions.push(new Explosion((player.x + rp.x) / 2, (player.y + rp.y) / 2));
                         }
-
-                        // Send damage to remote player
-                        Network.sendPvpDamage(id, contactDamage, player.x, player.y, hitAngle + Math.PI);
-
-                        // Push players apart
-                        const pushForce = 50;
-                        const pushAngle = Math.atan2(player.y - rp.y, player.x - rp.x);
-                        player.x += Math.cos(pushAngle) * pushForce * dt;
-                        player.y += Math.sin(pushAngle) * pushForce * dt;
-
-                        explosions.push(new Explosion((player.x + rp.x) / 2, (player.y + rp.y) / 2));
                     }
                 }
             }

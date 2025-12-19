@@ -2359,6 +2359,9 @@ class Ship {
             this.laserOffline = 0; this.torpFwdOffline = 0; this.torpAftOffline = 0;
             this.torpFwdTargetBad = 0; this.torpAftTargetBad = 0; this.baseSpeed = SPD;
 
+            // Spawn protection prevents PVP collision damage for first few seconds
+            this.spawnProtection = 3.0; // 3 seconds immunity
+
             // Bounce Physics
             this.bounceTimer = 0;
             this.bounceVelX = 0;

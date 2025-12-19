@@ -1283,6 +1283,28 @@ const Network = {
                 ctx.shadowBlur = 4;
                 ctx.fillText(rp.name, rp.x, rp.y - 50);
 
+                // Health Bar (above name)
+                const hullPercent = (rp.hull || 100) / (rp.maxHull || 100);
+                const barWidth = 50;
+                const barHeight = 4;
+                const barX = rp.x - barWidth / 2;
+                const barY = rp.y - 62;
+
+                // Background
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                ctx.fillRect(barX - 1, barY - 1, barWidth + 2, barHeight + 2);
+
+                // HP fill with color based on percentage
+                if (hullPercent > 0.5) {
+                    ctx.fillStyle = '#0f0'; // Green
+                } else if (hullPercent > 0.25) {
+                    ctx.fillStyle = '#fa0'; // Orange
+                } else {
+                    ctx.fillStyle = '#f00'; // Red
+                }
+                ctx.fillRect(barX, barY, barWidth * Math.max(0, hullPercent), barHeight);
+
                 ctx.restore();
             }
 
