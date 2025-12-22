@@ -354,6 +354,11 @@ const MD3 = {
         const partyHud = document.getElementById('md3-party-hud');
         if (partyHud) partyHud.classList.add('md3-hidden');
 
+        // Hide chat
+        if (typeof ChatSystem !== 'undefined') {
+            ChatSystem.hide();
+        }
+
         // Transition to main menu
         if (typeof MenuManager !== 'undefined') {
             MenuManager.transitionTo('MENU');

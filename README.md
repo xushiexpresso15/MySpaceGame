@@ -1,8 +1,10 @@
-## AI class project
+# 🚀 Space Shooter
+
+A browser-based multiplayer space combat game with stunning visuals and WebRTC-powered multiplayer support.
 
 ## 🎮 Play Now
 
-https://xushiexpresso15.github.io/MySpaceGame/
+Visit the game at: `https://YOUR_USERNAME.github.io/YOUR_REPO_NAME/`
 
 ## 🕹️ Controls
 
@@ -47,4 +49,3 @@ https://xushiexpresso15.github.io/MySpaceGame/
 ## 📄 License
 
 MIT License
-

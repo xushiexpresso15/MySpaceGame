@@ -323,6 +323,11 @@ function startMultiplayerGame() {
     const partyHud = document.getElementById('md3-party-hud');
     if (partyHud) partyHud.classList.remove('md3-hidden');
 
+    // Show chat for multiplayer
+    if (typeof ChatSystem !== 'undefined') {
+        ChatSystem.show();
+    }
+
     // Show multiplayer UI (legacy)
     const p2UI = document.getElementById('player2UI');
     const connStatus = document.getElementById('connectionStatus');
