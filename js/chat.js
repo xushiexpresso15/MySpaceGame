@@ -5,7 +5,7 @@
 
 const ChatSystem = {
     // State
-    isOpen: true,
+    isOpen: false,
     messages: [],
     unreadCount: 0,
 
@@ -168,10 +168,17 @@ const ChatSystem = {
 
     show() {
         this.container.classList.remove('md3-hidden');
+        // Ensure chat is expanded when shown
+        this.isOpen = true;
+        this.container.classList.remove('collapsed');
+        this.clearUnread();
     },
 
     hide() {
         this.container.classList.add('md3-hidden');
+        // Reset to collapsed state when hidden
+        this.isOpen = false;
+        this.container.classList.add('collapsed');
     },
 
     toggle() {
@@ -225,8 +232,8 @@ const ChatSystem = {
             timestamp: Date.now()
         });
 
-        // Update unread count if collapsed
-        if (!this.isOpen || this.container.classList.contains('collapsed')) {
+        // Update unread count if chat is collapsed
+        if (!this.isOpen) {
             this.incrementUnread();
         }
     },
@@ -571,8 +578,10 @@ const Chatty = {
         player.y = Math.max(player.r, Math.min(gameHeight - player.r, player.y + dy));
 
         // Sync position in multiplayer
-        if (Network.isMultiplayer && Network.connected) {
-            Network.sendClientShipMove();
+        if (typeof Network !== 'undefined' && Network.isMultiplayer && Network.connected) {
+            if (typeof Network.sendClientShipMove === 'function') {
+                Network.sendClientShipMove();
+            }
         }
     }
 };
@@ -586,8 +595,9 @@ if (typeof Network !== 'undefined') {
     Network.MSG.CHAT_MESSAGE = 'CTM';
 
     Network.broadcastChat = function (text) {
+        const senderName = (typeof myPlayerName !== 'undefined' && myPlayerName) ? myPlayerName : 'Unknown';
         const data = {
-            sender: myPlayerName || 'Unknown',
+            sender: senderName,
             text: text,
             timestamp: Date.now()
         };
@@ -628,36 +638,12 @@ if (typeof Network !== 'undefined') {
 // INITIALIZATION
 // =====================================================================
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Initialize after a short delay to ensure other systems are ready
-    setTimeout(() => {
-        ChatSystem.init();
-    }, 500);
-});
-
-// Also initialize if DOM is already loaded
-if (document.readyState !== 'loading') {
-    setTimeout(() => {
-        if (!ChatSystem.container) {
-            ChatSystem.init();
-        }
-    }, 500);
-}
-
-// =====================================================================
-// GAME STATE HOOKS
-// =====================================================================
-
-// Show chat when multiplayer game starts
-function showChatForMultiplayer() {
-    if (typeof ChatSystem !== 'undefined' && Network.isMultiplayer) {
-        ChatSystem.show();
-    }
-}
-
-// Hide chat when leaving multiplayer
-function hideChatForSinglePlayer() {
-    if (typeof ChatSystem !== 'undefined' && !Network.isMultiplayer) {
-        ChatSystem.hide();
-    }
+// Initialize chat system when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => ChatSystem.init(), 500);
+    });
+} else {
+    // DOM already loaded
+    setTimeout(() => ChatSystem.init(), 500);
 }

@@ -482,11 +482,10 @@ function showReloadButton() {
 // INITIALIZATION
 // =====================================================================
 
-document.addEventListener('DOMContentLoaded', () => {
-    MD3.init();
-});
-
-// Also try to init immediately if DOM is already ready
-if (document.readyState !== 'loading') {
+// Use a cleaner initialization pattern to avoid double-init
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => MD3.init());
+} else {
+    // DOM already loaded
     MD3.init();
 }
