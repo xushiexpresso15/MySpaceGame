@@ -468,7 +468,7 @@ const Chatty = {
                     'Accept': 'application/json'
                 },
                 body: JSON.stringify({
-                    model: 'command-r-plus',
+                    model: 'command-r-plus-08-2024',
                     message: userMessage,
                     preamble: this.systemPrompt,
                     temperature: 0.7,

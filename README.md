@@ -4,7 +4,7 @@ A browser-based multiplayer space combat game with stunning visuals and WebRTC-p
 
 ## 🎮 Play Now
 
-Visit the game at: `https://YOUR_USERNAME.github.io/YOUR_REPO_NAME/`
+Visit the game at: `https://xushiexpresso15.github.io/MySpaceGame/`
 
 ## 🕹️ Controls
 
