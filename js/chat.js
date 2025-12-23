@@ -416,7 +416,7 @@ const ChatSystem = {
 
 const Chatty = {
     apiKey: null,
-    apiEndpoint: 'https://api.cohere.ai/v1/chat',
+    apiEndpoint: 'https://api.cohere.com/v1/chat',  // Fixed: .com not .ai
 
     // System prompt defining Chatty's role and available commands
     systemPrompt: `You are Chatty, an AI co-pilot for a space combat game.
@@ -511,6 +511,8 @@ IMPORTANT:
                 }
 
                 const parsed = JSON.parse(jsonStr);
+                console.log('[Chatty] Parsed response:', parsed);
+                console.log('[Chatty] Actions:', parsed.actions);
                 return {
                     message: parsed.message || aiText,
                     actions: parsed.actions || []
