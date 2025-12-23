@@ -739,7 +739,9 @@ function loop(t) {
         if (md3TorpAft) md3TorpAft.textContent = torpAft;
         if (md3Hull && player) md3Hull.textContent = Math.round(player.hull / player.maxHull * 100) + '%';
         const A = getAngle();
-        if (A.angle !== null) {
+        // Only apply keyboard rotation if Chatty isn't controlling
+        // chattyRotationOverride is set by chat.js when AI rotates the ship
+        if (A.angle !== null && !window.chattyRotationOverride) {
             player.target = A.angle;
         }
 

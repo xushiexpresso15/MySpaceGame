@@ -570,22 +570,33 @@ IMPORTANT:
 
                 case 'TURN_LEFT':
                     if (typeof player !== 'undefined' && player && !player.dead) {
-                        // Rotate counter-clockwise (one step)
-                        // MUST modify player.target, not player.angle (game loop animates toward target)
+                        // Set override to prevent keyboard from overwriting our rotation
+                        window.chattyRotationOverride = true;
+
+                        // Rotate counter-clockwise (one step = 22.5 degrees)
                         const stepL = (typeof ROTATION_ANGLE !== 'undefined') ? ROTATION_ANGLE : 0.3927;
                         player.target -= stepL;
-                        player.angle = player.target; // Also set angle for immediate effect
-                        console.log('[Chatty] TURN_LEFT executed, new target:', player.target);
+                        player.angle = player.target; // Immediate effect
+                        console.log('[Chatty] TURN_LEFT executed, new angle:', (player.angle * 180 / Math.PI).toFixed(1), '°');
+
+                        // Clear override after a short delay to allow keyboard control back
+                        setTimeout(() => { window.chattyRotationOverride = false; }, 500);
                     }
                     break;
 
                 case 'TURN_RIGHT':
                     if (typeof player !== 'undefined' && player && !player.dead) {
-                        // Rotate clockwise (one step)
+                        // Set override to prevent keyboard from overwriting our rotation
+                        window.chattyRotationOverride = true;
+
+                        // Rotate clockwise (one step = 22.5 degrees)
                         const stepR = (typeof ROTATION_ANGLE !== 'undefined') ? ROTATION_ANGLE : 0.3927;
                         player.target += stepR;
-                        player.angle = player.target; // Also set angle for immediate effect
-                        console.log('[Chatty] TURN_RIGHT executed, new target:', player.target);
+                        player.angle = player.target; // Immediate effect
+                        console.log('[Chatty] TURN_RIGHT executed, new angle:', (player.angle * 180 / Math.PI).toFixed(1), '°');
+
+                        // Clear override after a short delay to allow keyboard control back
+                        setTimeout(() => { window.chattyRotationOverride = false; }, 500);
                     }
                     break;
 
