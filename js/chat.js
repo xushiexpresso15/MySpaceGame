@@ -419,33 +419,41 @@ const Chatty = {
     apiEndpoint: 'https://api.cohere.ai/v1/chat',
 
     // System prompt defining Chatty's role and available commands
-    systemPrompt: `你是 Chatty，一個太空戰鬥遊戲的 AI 副駕駛。玩家可以透過自然語言指令控制飛船。
+    systemPrompt: `You are Chatty, an AI co-pilot for a space combat game.
+Your goal is to help the player control their ship using natural language commands.
 
-你可以執行以下動作（使用 JSON 格式回應）：
-- FIRE_LASER: 發射雷射光束
-- FIRE_TORPEDO_FWD: 發射前向魚雷
-- FIRE_TORPEDO_AFT: 發射後向魚雷 (向後發射)
-- RELOAD: 重新裝填彈藥
-- MOVE_UP: 向上移動
-- MOVE_DOWN: 向下移動
-- MOVE_LEFT: 向左移動
-- MOVE_RIGHT: 向右移動
+AVAILABLE COMMANDS:
+- FIRE_LASER: Fire main laser
+- FIRE_TORPEDO_FWD: Fire forward torpedo
+- FIRE_TORPEDO_AFT: Fire aft (rear) torpedo
+- RELOAD: Reload ammo
+- TURN_LEFT: Rotate ship left 22.5 degrees
+- TURN_RIGHT: Rotate ship right 22.5 degrees
+- MOVE_UP: Move ship up
+- MOVE_DOWN: Move ship down
+- MOVE_LEFT: Move ship left
+- MOVE_RIGHT: Move ship right
+- STOP: Stop movement
 
-回應格式範例：
+RESPONSE FORMAT:
+You must ALWAYS respond with valid JSON.
+Example 1 (Command):
 {
-  "message": "收到！正在發射雷射！",
-  "actions": ["FIRE_LASER"]
+  "message": "Copy that! Turning 90 degrees and firing!",
+  "actions": ["TURN_LEFT", "TURN_LEFT", "TURN_LEFT", "TURN_LEFT", "FIRE_LASER"]
 }
 
-如果玩家只是聊天而不是下達指令，就正常回應不需要 actions：
+Example 2 (Chat):
 {
-  "message": "你好！我是 Chatty，有什麼我可以幫忙的嗎？"
+  "message": "I am standing by for orders, Commander.",
+  "actions": []
 }
 
-注意：
-1. 回應要簡短有趣，符合太空戰鬥的氛圍
-2. 如果不確定玩家的意圖，可以詢問
-3. 一次可以執行多個動作，例如 ["FIRE_LASER", "FIRE_TORPEDO_FWD"]`,
+IMPORTANT:
+1. The "actions" array must strictly contain only the command strings listed above.
+2. Each TURN command rotates exactly 22.5 degrees. To turn a specific angle, repeat the command (e.g., 45 degrees = 2 commands).
+3. If the user asks you to do something, execute it!
+4. Be brief, professional, and helpful.`,
 
     setApiKey(key) {
         this.apiKey = key;
@@ -471,7 +479,7 @@ const Chatty = {
                     model: 'command-r-plus-08-2024',
                     message: userMessage,
                     preamble: this.systemPrompt,
-                    temperature: 0.7,
+                    temperature: 0.3, // Lower temperature for more deterministic commands
                     max_tokens: 200
                 })
             });
@@ -483,26 +491,39 @@ const Chatty = {
 
             const data = await response.json();
             const aiText = data.text || '';
+            console.log('[Chatty] Raw response:', aiText);
 
-            // Try to parse as JSON
+            // Robust JSON parsing
             try {
-                // Look for JSON in the response
-                const jsonMatch = aiText.match(/\{[\s\S]*\}/);
-                if (jsonMatch) {
-                    const parsed = JSON.parse(jsonMatch[0]);
-                    return {
-                        message: parsed.message || aiText,
-                        actions: parsed.actions || []
-                    };
+                // 1. Try direct parsing
+                // 2. Try extracting from markdown code blocks ```json ... ```
+                let jsonStr = aiText;
+                const codeBlockMatch = aiText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+                if (codeBlockMatch) {
+                    jsonStr = codeBlockMatch[1];
+                } else {
+                    // 3. Try finding the first '{' and last '}'
+                    const firstBrace = aiText.indexOf('{');
+                    const lastBrace = aiText.lastIndexOf('}');
+                    if (firstBrace !== -1 && lastBrace !== -1) {
+                        jsonStr = aiText.substring(firstBrace, lastBrace + 1);
+                    }
                 }
-            } catch (parseError) {
-                // Not JSON, return as plain text
-            }
 
-            return {
-                message: aiText,
-                actions: []
-            };
+                const parsed = JSON.parse(jsonStr);
+                return {
+                    message: parsed.message || aiText,
+                    actions: parsed.actions || []
+                };
+
+            } catch (parseError) {
+                console.warn('[Chatty] JSON Parse Error:', parseError);
+                // Fallback: If parsing fails, just show the text and no actions
+                return {
+                    message: aiText,
+                    actions: []
+                };
+            }
 
         } catch (error) {
             console.error('[Chatty] API Error:', error);
@@ -518,25 +539,18 @@ const Chatty = {
 
             switch (action) {
                 case 'FIRE_LASER':
-                    if (typeof gameFireLaser === 'function') {
-                        gameFireLaser();
-                    }
+                    if (typeof gameFireLaser === 'function') gameFireLaser();
                     break;
 
                 case 'FIRE_TORPEDO_FWD':
-                    if (typeof gameFireTorpedoForward === 'function') {
-                        gameFireTorpedoForward();
-                    }
+                    if (typeof gameFireTorpedoForward === 'function') gameFireTorpedoForward();
                     break;
 
                 case 'FIRE_TORPEDO_AFT':
-                    if (typeof gameFireTorpedoAft === 'function') {
-                        gameFireTorpedoAft();
-                    }
+                    if (typeof gameFireTorpedoAft === 'function') gameFireTorpedoAft();
                     break;
 
                 case 'RELOAD':
-                    // Trigger reload if available
                     if (typeof canReload !== 'undefined' && canReload) {
                         torpFwd = 12;
                         torpAft = 5;
@@ -544,24 +558,33 @@ const Chatty = {
                         if (typeof torpAftDisplay !== 'undefined') torpAftDisplay.innerText = torpAft;
                         canReload = false;
                         reloadTimer = 0;
-                        console.log('[Chatty] Ammo reloaded');
                     }
                     break;
 
-                case 'MOVE_UP':
-                    this.movePlayer(0, -50);
+                case 'TURN_LEFT':
+                    if (typeof player !== 'undefined' && player) {
+                        // Rotate counter-clockwise (one step)
+                        // Using global ROTATION_ANGLE if available, else approx 22.5 deg
+                        const step = (typeof ROTATION_ANGLE !== 'undefined') ? ROTATION_ANGLE : 0.3927;
+                        player.angle -= step;
+                    }
                     break;
 
-                case 'MOVE_DOWN':
-                    this.movePlayer(0, 50);
+                case 'TURN_RIGHT':
+                    if (typeof player !== 'undefined' && player) {
+                        // Rotate clockwise (one step)
+                        const step = (typeof ROTATION_ANGLE !== 'undefined') ? ROTATION_ANGLE : 0.3927;
+                        player.angle += step;
+                    }
                     break;
 
-                case 'MOVE_LEFT':
-                    this.movePlayer(-50, 0);
-                    break;
+                case 'MOVE_UP': this.movePlayer(0, -50); break;
+                case 'MOVE_DOWN': this.movePlayer(0, 50); break;
+                case 'MOVE_LEFT': this.movePlayer(-50, 0); break;
+                case 'MOVE_RIGHT': this.movePlayer(50, 0); break;
 
-                case 'MOVE_RIGHT':
-                    this.movePlayer(50, 0);
+                case 'STOP':
+                    // Optional: implementation depends on physics
                     break;
 
                 default:
