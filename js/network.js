@@ -84,6 +84,9 @@ const Network = {
         // Visual Effects
         EXPLOSION: 'EX',         // Explosion effect sync
         PVP_VICTORY: 'PW',       // PVP victory - one player wins
+
+        // Chat
+        CHAT_MESSAGE: 'CTM',     // Chat message broadcast
     },
 
     // === URL UTILITIES ===
@@ -746,6 +749,17 @@ const Network = {
                 break;
             case this.MSG.PVP_VICTORY:
                 this.handlePVPVictory(data);
+                break;
+            case this.MSG.CHAT_MESSAGE:
+                // Relay chat messages and display them
+                if (this.isHost) {
+                    // Host relays to all clients except sender
+                    this.broadcast(this.MSG.CHAT_MESSAGE, data, senderId);
+                }
+                // Display the message locally
+                if (typeof ChatSystem !== 'undefined' && ChatSystem.receiveMessage) {
+                    ChatSystem.receiveMessage(senderId, data.sender, data.text);
+                }
                 break;
         }
     },
@@ -2233,5 +2247,27 @@ const Network = {
             playerX: playerX,
             playerY: playerY
         });
+    },
+
+    /**
+     * Broadcast a chat message to all players
+     */
+    broadcastChat(text, senderName) {
+        if (!this.connected) return;
+
+        const name = senderName || (typeof myPlayerName !== 'undefined' ? myPlayerName : 'Unknown');
+        const data = {
+            sender: name,
+            text: text,
+            timestamp: Date.now()
+        };
+
+        if (this.isHost) {
+            // Host broadcasts to all clients
+            this.broadcast(this.MSG.CHAT_MESSAGE, data);
+        } else {
+            // Client sends to host (host will relay)
+            this.sendTo('host', this.MSG.CHAT_MESSAGE, data);
+        }
     }
 };

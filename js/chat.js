@@ -442,8 +442,8 @@ AVAILABLE COMMANDS:
 - FIRE_TORPEDO_FWD: Fire forward torpedo
 - FIRE_TORPEDO_AFT: Fire aft (rear) torpedo
 - RELOAD: Reload ammo
-- TURN_LEFT: Rotate ship left 22.5 degrees
-- TURN_RIGHT: Rotate ship right 22.5 degrees
+- TURN_LEFT: Rotate ship left 90 degrees
+- TURN_RIGHT: Rotate ship right 90 degrees
 - MOVE_UP: Move ship up
 - MOVE_DOWN: Move ship down
 - MOVE_LEFT: Move ship left
@@ -454,8 +454,8 @@ RESPONSE FORMAT:
 You must ALWAYS respond with valid JSON.
 Example 1 (Command):
 {
-  "message": "Copy that! Turning 90 degrees and firing!",
-  "actions": ["TURN_LEFT", "TURN_LEFT", "TURN_LEFT", "TURN_LEFT", "FIRE_LASER"]
+  "message": "Copy that! Turning right and firing!",
+  "actions": ["TURN_RIGHT", "FIRE_LASER"]
 }
 
 Example 2 (Chat):
@@ -466,7 +466,7 @@ Example 2 (Chat):
 
 IMPORTANT:
 1. The "actions" array must strictly contain only the command strings listed above.
-2. Each TURN command rotates exactly 22.5 degrees. To turn a specific angle, repeat the command (e.g., 45 degrees = 2 commands).
+2. Each TURN command rotates exactly 90 degrees. For 180 degrees, use 2 TURN commands.
 3. If the user asks you to do something, execute it!
 4. Be brief, professional, and helpful.`,
 
@@ -644,50 +644,8 @@ IMPORTANT:
 // =====================================================================
 // NETWORK INTEGRATION
 // =====================================================================
-
-// Add chat broadcast method to Network
-if (typeof Network !== 'undefined') {
-    Network.MSG.CHAT_MESSAGE = 'CTM';
-
-    Network.broadcastChat = function (text) {
-        const senderName = (typeof myPlayerName !== 'undefined' && myPlayerName) ? myPlayerName : 'Unknown';
-        const data = {
-            sender: senderName,
-            text: text,
-            timestamp: Date.now()
-        };
-
-        if (this.isHost) {
-            // Host broadcasts to all clients
-            this.broadcast(this.MSG.CHAT_MESSAGE, data);
-        } else {
-            // Client sends to host
-            this.sendTo('host', this.MSG.CHAT_MESSAGE, data);
-        }
-    };
-
-    // Extend handleMessage to process chat messages
-    const originalHandleMessage = Network.handleMessage.bind(Network);
-    Network.handleMessage = function (senderId, msg) {
-        if (msg.msg === this.MSG.CHAT_MESSAGE) {
-            const data = msg.data;
-
-            // If host, relay to other clients
-            if (this.isHost) {
-                this.broadcast(this.MSG.CHAT_MESSAGE, data, senderId);
-            }
-
-            // Display the message
-            if (typeof ChatSystem !== 'undefined') {
-                ChatSystem.receiveMessage(senderId, data.sender, data.text);
-            }
-            return;
-        }
-
-        // Call original handler for other messages
-        originalHandleMessage(senderId, msg);
-    };
-}
+// Chat message handling is now integrated directly into network.js
+// The broadcastChat function and CHAT_MESSAGE handler are in network.js
 
 // =====================================================================
 // INITIALIZATION
