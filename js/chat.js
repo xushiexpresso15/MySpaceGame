@@ -336,8 +336,13 @@ const ChatSystem = {
             });
 
             // Execute actions if any
+            console.log('[ChatSystem] Response actions:', response.actions);
             if (response.actions && response.actions.length > 0) {
+                console.log('[ChatSystem] Calling executeActions with:', response.actions);
                 Chatty.executeActions(response.actions);
+                console.log('[ChatSystem] executeActions completed');
+            } else {
+                console.log('[ChatSystem] No actions to execute');
             }
         } catch (error) {
             this.hideTypingIndicator();
@@ -564,19 +569,23 @@ IMPORTANT:
                     break;
 
                 case 'TURN_LEFT':
-                    if (typeof player !== 'undefined' && player) {
+                    if (typeof player !== 'undefined' && player && !player.dead) {
                         // Rotate counter-clockwise (one step)
-                        // Using global ROTATION_ANGLE if available, else approx 22.5 deg
-                        const step = (typeof ROTATION_ANGLE !== 'undefined') ? ROTATION_ANGLE : 0.3927;
-                        player.angle -= step;
+                        // MUST modify player.target, not player.angle (game loop animates toward target)
+                        const stepL = (typeof ROTATION_ANGLE !== 'undefined') ? ROTATION_ANGLE : 0.3927;
+                        player.target -= stepL;
+                        player.angle = player.target; // Also set angle for immediate effect
+                        console.log('[Chatty] TURN_LEFT executed, new target:', player.target);
                     }
                     break;
 
                 case 'TURN_RIGHT':
-                    if (typeof player !== 'undefined' && player) {
+                    if (typeof player !== 'undefined' && player && !player.dead) {
                         // Rotate clockwise (one step)
-                        const step = (typeof ROTATION_ANGLE !== 'undefined') ? ROTATION_ANGLE : 0.3927;
-                        player.angle += step;
+                        const stepR = (typeof ROTATION_ANGLE !== 'undefined') ? ROTATION_ANGLE : 0.3927;
+                        player.target += stepR;
+                        player.angle = player.target; // Also set angle for immediate effect
+                        console.log('[Chatty] TURN_RIGHT executed, new target:', player.target);
                     }
                     break;
 
