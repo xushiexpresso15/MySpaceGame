@@ -308,6 +308,11 @@ const ChatSystem = {
             timestamp: Date.now()
         });
 
+        // Broadcast the Chatty command to other players so they can see it
+        if (typeof Network !== 'undefined' && Network.isMultiplayer && Network.connected) {
+            Network.broadcastChat(originalText);
+        }
+
         // Check if API key is configured
         if (!Chatty.apiKey) {
             this.addMessage({
@@ -327,13 +332,18 @@ const ChatSystem = {
             const response = await Chatty.processCommand(command);
             this.hideTypingIndicator();
 
-            // Show Chatty's response
+            // Show Chatty's response locally
             this.addMessage({
                 sender: 'Chatty',
                 text: response.message,
                 type: 'chatty',
                 timestamp: Date.now()
             });
+
+            // Broadcast Chatty's response to other players
+            if (typeof Network !== 'undefined' && Network.isMultiplayer && Network.connected) {
+                Network.broadcastChat(`[Chatty] ${response.message}`);
+            }
 
             // Execute actions if any
             console.log('[ChatSystem] Response actions:', response.actions);
@@ -573,11 +583,11 @@ IMPORTANT:
                         // Set override to prevent keyboard from overwriting our rotation
                         window.chattyRotationOverride = true;
 
-                        // Rotate counter-clockwise (one step = 22.5 degrees)
+                        // Rotate counter-clockwise 90 degrees (4 steps of 22.5 degrees)
                         const stepL = (typeof ROTATION_ANGLE !== 'undefined') ? ROTATION_ANGLE : 0.3927;
-                        player.target -= stepL;
+                        player.target -= stepL * 4;  // 90 degrees
                         player.angle = player.target; // Immediate effect
-                        console.log('[Chatty] TURN_LEFT executed, new angle:', (player.angle * 180 / Math.PI).toFixed(1), '°');
+                        console.log('[Chatty] TURN_LEFT executed, rotated 90°, new angle:', (player.angle * 180 / Math.PI).toFixed(1), '°');
 
                         // Clear override after a short delay to allow keyboard control back
                         setTimeout(() => { window.chattyRotationOverride = false; }, 500);
@@ -589,11 +599,11 @@ IMPORTANT:
                         // Set override to prevent keyboard from overwriting our rotation
                         window.chattyRotationOverride = true;
 
-                        // Rotate clockwise (one step = 22.5 degrees)
+                        // Rotate clockwise 90 degrees (4 steps of 22.5 degrees)
                         const stepR = (typeof ROTATION_ANGLE !== 'undefined') ? ROTATION_ANGLE : 0.3927;
-                        player.target += stepR;
+                        player.target += stepR * 4;  // 90 degrees
                         player.angle = player.target; // Immediate effect
-                        console.log('[Chatty] TURN_RIGHT executed, new angle:', (player.angle * 180 / Math.PI).toFixed(1), '°');
+                        console.log('[Chatty] TURN_RIGHT executed, rotated 90°, new angle:', (player.angle * 180 / Math.PI).toFixed(1), '°');
 
                         // Clear override after a short delay to allow keyboard control back
                         setTimeout(() => { window.chattyRotationOverride = false; }, 500);
