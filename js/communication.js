@@ -108,7 +108,7 @@ const CommChannel = {
 
         // Send hail request via network
         Network.send(Network.MSG.COMM_HAIL, {
-            fromId: Network.peerId,
+            fromId: Network.myId,
             fromName: myPlayerName,
             toId: targetId
         });
@@ -152,7 +152,7 @@ const CommChannel = {
         // Broadcast to multiplayer if player channel
         if (this.targetType === 'PLAYER' && typeof Network !== 'undefined' && Network.connected) {
             Network.send(Network.MSG.COMM_OPEN, {
-                fromId: Network.peerId,
+                fromId: Network.myId,
                 toId: this.targetId
             });
         }
@@ -189,7 +189,7 @@ const CommChannel = {
             // Send to player via network
             if (typeof Network !== 'undefined' && Network.connected) {
                 Network.send(Network.MSG.COMM_MSG, {
-                    fromId: Network.peerId,
+                    fromId: Network.myId,
                     fromName: myPlayerName,
                     toId: this.targetId,
                     text: textString
@@ -220,7 +220,7 @@ const CommChannel = {
         // Notify other party if player channel
         if (this.targetType === 'PLAYER' && typeof Network !== 'undefined' && Network.connected) {
             Network.send(Network.MSG.COMM_CLOSE, {
-                fromId: Network.peerId,
+                fromId: Network.myId,
                 toId: this.targetId
             });
         }
@@ -294,7 +294,7 @@ const CommChannel = {
         // Notify sender
         if (this.pendingHail.type === 'PLAYER' && typeof Network !== 'undefined') {
             Network.send(Network.MSG.COMM_CLOSE, {
-                fromId: Network.peerId,
+                fromId: Network.myId,
                 toId: this.pendingHail.fromId,
                 rejected: true
             });
@@ -474,13 +474,13 @@ const CommChannel = {
 // These handlers will be registered when Network initializes
 const CommNetworkHandlers = {
     handleHail(data) {
-        if (data.toId === Network.peerId) {
+        if (data.toId === Network.myId) {
             CommChannel.onHailReceived('PLAYER', data.fromId, data.fromName);
         }
     },
 
     handleOpen(data) {
-        if (data.toId === Network.peerId) {
+        if (data.toId === Network.myId) {
             CommChannel.targetType = 'PLAYER';
             CommChannel.targetId = data.fromId;
             CommChannel.targetName = remotePlayers.get(data.fromId)?.name || 'Player';
@@ -489,13 +489,13 @@ const CommNetworkHandlers = {
     },
 
     handleMessage(data) {
-        if (data.toId === Network.peerId && CommChannel.isOpen) {
+        if (data.toId === Network.myId && CommChannel.isOpen) {
             CommChannel._receiveMessage(data.fromName, data.text);
         }
     },
 
     handleClose(data) {
-        if (data.toId === Network.peerId && CommChannel.isOpen) {
+        if (data.toId === Network.myId && CommChannel.isOpen) {
             CommChannel.CloseChannel();
         }
     }
