@@ -22,6 +22,9 @@ function gameFireLaser() {
         laserReady = false;
         laserCooldown = 10;
 
+        // Play laser sound
+        if (typeof playLaserSound === 'function') playLaserSound();
+
         // Network sync
         if (Network.isMultiplayer && Network.connected) {
             Network.fireWeapon('LASER', player.x, player.y, player.angle);
@@ -47,6 +50,9 @@ function gameFireTorpedoForward() {
         torpFwd--;
         torpFwdDisplay.innerText = torpFwd;
 
+        // Play torpedo sound
+        if (typeof playTorpedoSound === 'function') playTorpedoSound();
+
         // Network sync
         if (Network.isMultiplayer && Network.connected) {
             Network.fireWeapon('TORPEDO', player.x, player.y, angle);
@@ -71,6 +77,9 @@ function gameFireTorpedoAft() {
         torps.push(new Torpedo(player.x, player.y, angle, false));
         torpAft--;
         torpAftDisplay.innerText = torpAft;
+
+        // Play torpedo sound
+        if (typeof playTorpedoSound === 'function') playTorpedoSound();
 
         // Network sync
         if (Network.isMultiplayer && Network.connected) {
@@ -511,13 +520,26 @@ function applyDamageToPlayer(amount, sector) {
     if (player.shield[sector] > 0) {
         let overflow = Math.max(0, amount - player.shield[sector]);
         player.shield[sector] = Math.max(0, player.shield[sector] - amount);
+
+        // Play shield hit sound
+        if (typeof playShieldHitLaser === 'function') playShieldHitLaser();
+
         if (overflow > 0) {
             player.hull = Math.max(0, player.hull - overflow);
+            // Play hull hit sound for overflow damage
+            if (typeof playHullHit === 'function') playHullHit();
         }
     } else {
         player.hull = Math.max(0, player.hull - amount);
+        // Play hull hit sound
+        if (typeof playHullHit === 'function') playHullHit();
     }
     hullDisplay.innerText = Math.round(player.hull / player.maxHull * 100) + '%';
+
+    // Check shield status for crew warnings
+    if (typeof ShieldManager !== 'undefined') {
+        ShieldManager.checkShieldStatus();
+    }
 
     // Check for death - let the main loop handle it for proper sync
     // (the main loop checks player.hull <= 0 && !player.dead)

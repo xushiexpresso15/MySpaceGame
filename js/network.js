@@ -87,6 +87,12 @@ const Network = {
 
         // Chat
         CHAT_MESSAGE: 'CTM',     // Chat message broadcast
+
+        // Communication Channel
+        COMM_HAIL: 'CHN',        // Hail request
+        COMM_OPEN: 'COP',        // Channel opened
+        COMM_MSG: 'CMG',         // Channel message
+        COMM_CLOSE: 'CCL',       // Channel closed
     },
 
     // === URL UTILITIES ===
@@ -759,6 +765,44 @@ const Network = {
                 // Display the message locally
                 if (typeof ChatSystem !== 'undefined' && ChatSystem.receiveMessage) {
                     ChatSystem.receiveMessage(senderId, data.sender, data.text);
+                }
+                break;
+
+            // Communication channel handlers
+            case this.MSG.COMM_HAIL:
+                if (typeof CommChannel !== 'undefined' && data.toId === this.myId) {
+                    CommChannel.onHailReceived('PLAYER', data.fromId, data.fromName);
+                }
+                // Host relays to target
+                if (this.isHost && data.toId !== 'host') {
+                    this.sendTo(data.toId, this.MSG.COMM_HAIL, data);
+                }
+                break;
+            case this.MSG.COMM_OPEN:
+                if (typeof CommChannel !== 'undefined' && data.toId === this.myId) {
+                    CommChannel.targetType = 'PLAYER';
+                    CommChannel.targetId = data.fromId;
+                    CommChannel.targetName = remotePlayers.get(data.fromId)?.name || 'Player';
+                    CommChannel.OpenChannel();
+                }
+                if (this.isHost && data.toId !== 'host') {
+                    this.sendTo(data.toId, this.MSG.COMM_OPEN, data);
+                }
+                break;
+            case this.MSG.COMM_MSG:
+                if (typeof CommChannel !== 'undefined' && CommChannel.isOpen && data.toId === this.myId) {
+                    CommChannel._receiveMessage(data.fromName, data.text);
+                }
+                if (this.isHost && data.toId !== 'host') {
+                    this.sendTo(data.toId, this.MSG.COMM_MSG, data);
+                }
+                break;
+            case this.MSG.COMM_CLOSE:
+                if (typeof CommChannel !== 'undefined' && CommChannel.isOpen && data.toId === this.myId) {
+                    CommChannel.CloseChannel();
+                }
+                if (this.isHost && data.toId !== 'host') {
+                    this.sendTo(data.toId, this.MSG.COMM_CLOSE, data);
                 }
                 break;
         }

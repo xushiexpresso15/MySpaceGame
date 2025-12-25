@@ -1,0 +1,465 @@
+/* =====================================================================
+   VOICE COMMANDS & COMMUNICATION UI STYLES
+   Styles for voice button, listening indicator, comm overlay, and hail dialog
+   ===================================================================== */
+
+/* =====================================================================
+   VOICE COMMAND BUTTON
+   ===================================================================== */
+
+.voice-command-btn {
+    position: fixed;
+    bottom: 100px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, #6750A4, #7C5CBF);
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(103, 80, 164, 0.4);
+    transition: all 0.3s ease;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.voice-command-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(103, 80, 164, 0.6);
+}
+
+.voice-command-btn.active {
+    background: linear-gradient(135deg, #E53935, #FF5252);
+    animation: voice-pulse 1.5s infinite;
+}
+
+@keyframes voice-pulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(229, 57, 53, 0.7);
+    }
+
+    50% {
+        box-shadow: 0 0 0 15px rgba(229, 57, 53, 0);
+    }
+}
+
+/* =====================================================================
+   VOICE INDICATOR (Listening...)
+   ===================================================================== */
+
+.voice-indicator {
+    position: fixed;
+    bottom: 170px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #FF5252;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.voice-indicator.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.voice-pulse {
+    width: 10px;
+    height: 10px;
+    background: #FF5252;
+    border-radius: 50%;
+    animation: voice-dot-pulse 1s infinite;
+}
+
+@keyframes voice-dot-pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.5;
+        transform: scale(0.8);
+    }
+}
+
+/* =====================================================================
+   COMMUNICATION OVERLAY
+   ===================================================================== */
+
+.comm-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 10, 30, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.comm-overlay.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.comm-window {
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    background: linear-gradient(135deg, rgba(20, 30, 60, 0.95), rgba(10, 20, 40, 0.98));
+    border: 2px solid rgba(100, 200, 255, 0.3);
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow:
+        0 0 40px rgba(100, 200, 255, 0.2),
+        inset 0 0 60px rgba(100, 200, 255, 0.05);
+}
+
+.comm-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: linear-gradient(90deg, rgba(100, 200, 255, 0.1), transparent);
+    border-bottom: 1px solid rgba(100, 200, 255, 0.2);
+}
+
+.comm-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #64C8FF;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.comm-target {
+    font-size: 16px;
+    font-weight: 700;
+    color: #FFD700;
+}
+
+.comm-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 200px;
+    max-height: 400px;
+}
+
+.comm-message {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-width: 80%;
+}
+
+.comm-message.self {
+    align-self: flex-end;
+    align-items: flex-end;
+}
+
+.comm-message.other {
+    align-self: flex-start;
+    align-items: flex-start;
+}
+
+.comm-sender {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.comm-message.self .comm-sender {
+    color: #64C8FF;
+}
+
+.comm-message.other .comm-sender {
+    color: #FFD700;
+}
+
+.comm-text {
+    padding: 10px 16px;
+    border-radius: 16px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.comm-message.self .comm-text {
+    background: linear-gradient(135deg, #6750A4, #7C5CBF);
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+.comm-message.other .comm-text {
+    background: rgba(100, 200, 255, 0.15);
+    color: #E0E0E0;
+    border: 1px solid rgba(100, 200, 255, 0.2);
+    border-bottom-left-radius: 4px;
+}
+
+.comm-input-area {
+    display: flex;
+    gap: 10px;
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.3);
+    border-top: 1px solid rgba(100, 200, 255, 0.2);
+}
+
+.comm-input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1px solid rgba(100, 200, 255, 0.3);
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.comm-input:focus {
+    border-color: #64C8FF;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.comm-input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.comm-send-btn {
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #6750A4, #7C5CBF);
+    color: white;
+    border: none;
+    border-radius: 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.comm-send-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(103, 80, 164, 0.4);
+}
+
+.comm-close-btn {
+    padding: 12px 20px;
+    background: rgba(255, 100, 100, 0.2);
+    color: #FF6B6B;
+    border: 1px solid rgba(255, 100, 100, 0.3);
+    border-radius: 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.comm-close-btn:hover {
+    background: rgba(255, 100, 100, 0.3);
+    border-color: #FF6B6B;
+}
+
+/* =====================================================================
+   HAIL DIALOG
+   ===================================================================== */
+
+.hail-dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    background: linear-gradient(135deg, rgba(20, 30, 60, 0.98), rgba(10, 20, 40, 0.98));
+    border: 2px solid rgba(255, 215, 0, 0.5);
+    border-radius: 16px;
+    padding: 30px;
+    z-index: 2100;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    box-shadow:
+        0 0 60px rgba(255, 215, 0, 0.3),
+        inset 0 0 30px rgba(255, 215, 0, 0.05);
+}
+
+.hail-dialog.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.hail-content {
+    text-align: center;
+}
+
+.hail-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #FFD700;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    animation: hail-blink 1s infinite;
+}
+
+@keyframes hail-blink {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
+}
+
+.hail-from {
+    font-size: 24px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 24px;
+}
+
+.hail-buttons {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+}
+
+.hail-accept {
+    padding: 12px 32px;
+    background: linear-gradient(135deg, #4CAF50, #66BB6A);
+    color: white;
+    border: none;
+    border-radius: 24px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.hail-accept:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 20px rgba(76, 175, 80, 0.4);
+}
+
+.hail-reject {
+    padding: 12px 32px;
+    background: rgba(255, 100, 100, 0.2);
+    color: #FF6B6B;
+    border: 1px solid rgba(255, 100, 100, 0.4);
+    border-radius: 24px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.hail-reject:hover {
+    background: rgba(255, 100, 100, 0.3);
+}
+
+/* =====================================================================
+   SHIELD DIVERT INDICATOR (HUD addition)
+   ===================================================================== */
+
+.shield-divert-indicator {
+    position: fixed;
+    top: 150px;
+    left: 20px;
+    background: rgba(255, 200, 0, 0.15);
+    border: 1px solid rgba(255, 200, 0, 0.4);
+    border-radius: 8px;
+    padding: 8px 16px;
+    color: #FFD700;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    z-index: 500;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.shield-divert-indicator.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.shield-divert-indicator .divert-label {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.shield-divert-indicator .divert-sector {
+    color: #FFD700;
+    margin-left: 8px;
+}
+
+/* =====================================================================
+   RESPONSIVE ADJUSTMENTS
+   ===================================================================== */
+
+@media (max-width: 600px) {
+    .voice-command-btn {
+        bottom: 80px;
+        right: 10px;
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
+    }
+
+    .voice-indicator {
+        bottom: 140px;
+        right: 10px;
+        font-size: 12px;
+    }
+
+    .comm-window {
+        width: 95%;
+        max-height: 90vh;
+    }
+
+    .comm-input-area {
+        flex-wrap: wrap;
+    }
+
+    .comm-input {
+        width: 100%;
+    }
+
+    .comm-send-btn,
+    .comm-close-btn {
+        flex: 1;
+    }
+}

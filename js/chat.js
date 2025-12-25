@@ -438,10 +438,14 @@ const Chatty = {
 Your goal is to help the player control their ship using natural language commands.
 
 AVAILABLE COMMANDS:
+
+WEAPONS:
 - FIRE_LASER: Fire main laser
 - FIRE_TORPEDO_FWD: Fire forward torpedo
 - FIRE_TORPEDO_AFT: Fire aft (rear) torpedo
 - RELOAD: Reload ammo
+
+MOVEMENT:
 - TURN_LEFT: Rotate ship left 90 degrees
 - TURN_RIGHT: Rotate ship right 90 degrees
 - MOVE_UP: Move ship up
@@ -449,6 +453,18 @@ AVAILABLE COMMANDS:
 - MOVE_LEFT: Move ship left
 - MOVE_RIGHT: Move ship right
 - STOP: Stop movement
+
+SHIELDS:
+- DIVERT_SHIELDS_FRONT: Boost front shields (+50%), reduce others (-50%) and speed (-50%)
+- DIVERT_SHIELDS_AFT: Boost rear shields
+- DIVERT_SHIELDS_LEFT: Boost port (left) shields
+- DIVERT_SHIELDS_RIGHT: Boost starboard (right) shields
+- RESTORE_SHIELDS: Restore default shield distribution and speed
+
+COMMUNICATION:
+- HAIL_ENEMY: Attempt to contact enemy vessel
+- HAIL_PLAYER: Hail another player (multiplayer only)
+- CLOSE_CHANNEL: End current communication
 
 RESPONSE FORMAT:
 You must ALWAYS respond with valid JSON.
@@ -458,7 +474,13 @@ Example 1 (Command):
   "actions": ["TURN_RIGHT", "FIRE_LASER"]
 }
 
-Example 2 (Chat):
+Example 2 (Shield):
+{
+  "message": "Diverting power to forward shields. Speed reduced.",
+  "actions": ["DIVERT_SHIELDS_FRONT"]
+}
+
+Example 3 (Chat):
 {
   "message": "I am standing by for orders, Commander.",
   "actions": []
@@ -467,7 +489,7 @@ Example 2 (Chat):
 IMPORTANT:
 1. The "actions" array must strictly contain only the command strings listed above.
 2. Each TURN command rotates exactly 90 degrees. For 180 degrees, use 2 TURN commands.
-3. If the user asks you to do something, execute it!
+3. For shield divert, warn about the trade-off (speed and other shields reduced).
 4. Be brief, professional, and helpful.`,
 
     setApiKey(key) {
@@ -617,6 +639,34 @@ IMPORTANT:
 
                 case 'STOP':
                     // Optional: implementation depends on physics
+                    break;
+
+                // Shield divert commands
+                case 'DIVERT_SHIELDS_FRONT':
+                    if (typeof divertShieldsFront === 'function') divertShieldsFront();
+                    break;
+                case 'DIVERT_SHIELDS_AFT':
+                    if (typeof divertShieldsAft === 'function') divertShieldsAft();
+                    break;
+                case 'DIVERT_SHIELDS_LEFT':
+                    if (typeof divertShieldsPort === 'function') divertShieldsPort();
+                    break;
+                case 'DIVERT_SHIELDS_RIGHT':
+                    if (typeof divertShieldsStarboard === 'function') divertShieldsStarboard();
+                    break;
+                case 'RESTORE_SHIELDS':
+                    if (typeof restoreDefaultShields === 'function') restoreDefaultShields();
+                    break;
+
+                // Communication commands
+                case 'HAIL_ENEMY':
+                    if (typeof CommChannel !== 'undefined') CommChannel.HailEnemy();
+                    break;
+                case 'HAIL_PLAYER':
+                    if (typeof CommChannel !== 'undefined') CommChannel.HailPlayer();
+                    break;
+                case 'CLOSE_CHANNEL':
+                    if (typeof CommChannel !== 'undefined') CommChannel.CloseChannel();
                     break;
 
                 default:
