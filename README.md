@@ -1,4 +1,6 @@
-# 🚀 Space Shooter
+# Notify : this is a fully AI generated repo. This is the final project of a class called "AI-assisted programming"
+
+## 🚀 Space Shooter
 
 A browser-based multiplayer space combat game with stunning visuals and WebRTC-powered multiplayer support.
 
